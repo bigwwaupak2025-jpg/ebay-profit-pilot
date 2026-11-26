@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>eBay Profit Pilot</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f7f9;--card:#fff;--ink:#14171f;--muted:#5d6472;--line:#e3e6eb;
+  --accent:#2457d6;--accent-soft:#e8eefc;--good:#16834a;--good-soft:#e5f5ec;
+  --warn:#a35600;--warn-soft:#fdf1e2;--bad:#c4321f;--bad-soft:#fdeae7;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0f1115;--card:#171a21;--ink:#eceef2;--muted:#9aa1ad;--line:#2a2f39;
+  --accent:#6d93f2;--accent-soft:#1c2540;--good:#4cc584;--good-soft:#14281e;
+  --warn:#f0a548;--warn-soft:#2d2213;--bad:#f07a68;--bad-soft:#2f1714;}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 Inter,system-ui,sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 20px 56px}
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+h1{margin:0;font-size:27px;letter-spacing:-.02em}
+h1 span{color:var(--accent)}
+.sub{color:var(--muted);margin:4px 0 0}
+.pill{display:inline-flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:99px;padding:6px 12px;font-size:13px;color:var(--muted)}
+nav.steps{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 18px}
+nav.steps a{font-size:13px;font-weight:600;text-decoration:none;color:var(--muted);background:var(--card);border:1px solid var(--line);border-radius:99px;padding:5px 11px}
+nav.steps a:hover{color:var(--accent);border-color:var(--accent)}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:20px;align-items:start}
+@media (max-width:960px){.layout{grid-template-columns:1fr}}
+.side{position:sticky;top:16px}
+@media (max-width:960px){.side{position:static}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px;scroll-margin-top:12px}
+.card h2{display:flex;align-items:center;gap:10px;font-size:16px;margin:0 0 4px}
+.card h2 .l{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:8px;background:var(--accent);color:#fff;font-size:13px}
+.card .hint{color:var(--muted);font-size:13px;margin:0 0 14px}
+h3{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:14px 0 8px;font-weight:600}
+select,input,textarea{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:transparent}
+textarea{width:100%;resize:vertical}
+.row{display:grid;grid-template-columns:1fr 140px;align-items:center;gap:10px;margin-bottom:10px}
+.row label{font-weight:500}
+.row small,.lbl small{display:block;color:var(--muted);font-weight:400;font-size:12px}
+.row select{width:100%}
+.row.wide{grid-template-columns:minmax(0,.9fr) minmax(0,1.3fr)}
+.field{position:relative}
+.field input{width:100%;text-align:right;font-family:'JetBrains Mono',monospace;padding-right:28px}
+.field .u{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;pointer-events:none}
+.field.pre input{padding-left:24px;padding-right:10px}
+.field.pre .u{left:10px;right:auto}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:0 24px}
+@media (max-width:700px){.cols{grid-template-columns:1fr}}
+.drop{border:1.5px dashed var(--line);border-radius:12px;padding:14px;display:flex;gap:14px;align-items:center;cursor:pointer;min-height:96px}
+.drop:hover,.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+.drop img{width:80px;height:80px;object-fit:cover;border-radius:8px;display:none}
+.drop .dt{font-size:13.5px;color:var(--muted)}
+.drop .dt b{color:var(--ink)}
+.inline{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.inline input[type=text],.inline input[type=url]{flex:1;min-width:200px}
+button{font:500 13px Inter,sans-serif;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:8px 12px;cursor:pointer}
+button:hover{border-color:var(--accent);color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+button.primary:hover{opacity:.9;color:#fff}
+button:disabled{opacity:.5;cursor:default}
+.links{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 4px}
+.links a{font-size:13px;font-weight:500;text-decoration:none;color:var(--accent);background:var(--accent-soft);border-radius:8px;padding:6px 10px}
+.links a:hover{text-decoration:underline}
+table{width:100%;border-collapse:collapse;font-size:14px}
+td,th{padding:7px 4px;border-bottom:1px solid var(--line);text-align:left}
+th{font-size:12px;color:var(--muted);font-weight:600}
+td.num,th.num{text-align:right;font-family:'JetBrains Mono',monospace}
+.sup input{width:100%;padding:6px 8px;font-size:13.5px}
+.sup td{padding:4px}
+.sup tr.best td{background:var(--good-soft)}
+.x{border:none;background:none;color:var(--muted);padding:4px 6px}
+.hero{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px}
+.tile{border:1px solid var(--line);border-radius:12px;padding:10px}
+.tile .k{color:var(--muted);font-size:12px}
+.tile .v{font:600 20px 'JetBrains Mono',monospace;letter-spacing:-.02em;margin-top:2px}
+.pos{color:var(--good)}.neg{color:var(--bad)}
+.bd td{padding:5px 0;font-size:13.5px}
+.bd td:last-child{text-align:right;font-family:'JetBrains Mono',monospace}
+.bd tr.m td{color:var(--muted)}
+.bd tr.t td{font-weight:700;border-bottom:none;padding-top:8px}
+.kv{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.kv b{font-family:'JetBrains Mono',monospace;font-weight:600}
+.bar{height:10px;border-radius:99px;background:var(--line);overflow:hidden;display:flex;margin:4px 0 8px}
+.bar i{display:block;height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:12px;color:var(--muted);margin-bottom:8px}
+.legend span::before{content:"";display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;background:var(--c)}
+.tiers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}
+@media (max-width:620px){.tiers{grid-template-columns:1fr}}
+.tier{border:1px solid var(--line);border-radius:12px;padding:12px;position:relative}
+.tier.rec{border-color:var(--accent);background:var(--accent-soft)}
+.tier .t{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.tier .p{font:600 21px 'JetBrains Mono',monospace;margin:4px 0 2px}
+.tier .m{font-size:12.5px}
+.badge{position:absolute;top:-9px;right:10px;background:var(--accent);color:#fff;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px}
+.note{border-radius:10px;padding:10px 12px;font-size:13.5px;margin:0 0 12px}
+.note.good{background:var(--good-soft);color:var(--good)}
+.note.warn{background:var(--warn-soft);color:var(--warn)}
+.note.bad{background:var(--bad-soft);color:var(--bad)}
+.note.info{background:var(--accent-soft);color:var(--accent)}
+.seo-out{border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px}
+.seo-out .hd{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
+.seo-out .hd b{font-size:13px}
+.seo-out .cnt{font:12px 'JetBrains Mono',monospace;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:12.5px;background:var(--bg);border:1px solid var(--line);border-radius:99px;padding:3px 10px}
+.chip.p{background:var(--accent-soft);border-color:transparent;color:var(--accent);font-weight:600}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:s .8s linear infinite;vertical-align:-2px}
+@keyframes s{to{transform:rotate(360deg)}}
+.hidden{display:none!important}
+.foot{color:var(--muted);font-size:12.5px;margin-top:6px}
+.foot a{color:var(--accent)}
+.toggle{display:flex;gap:0;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.toggle button{border:none;border-radius:0;flex:1;padding:7px 8px}
+.toggle button.on{background:var(--accent);color:#fff}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div>
+    <h1>eBay <span>Profit Pilot</span></h1>
+    <p class="sub">A → G for eBay Australia: product, sourcing, competitors, fees, postage, profit and an SEO-ready listing.</p>
+  </div>
+  <div class="pill">🇦🇺 eBay.com.au · AUD · fees incl. GST</div>
+</header>
+
+<nav class="steps">
+  <a href="#a">A · Product</a><a href="#b">B · Sourcing</a><a href="#c">C · Competitors</a><a href="#d">D · eBay fees</a><a href="#e">E · Postage</a><a href="#f">F · Profit & price</a><a href="#g">G · SEO listing</a>
+</nav>
+
+<div class="layout">
+<main>
+
+<!-- A -->
+<section class="card" id="a">
+  <h2><span class="l">A</span>Product</h2>
+  <p class="hint">Upload your product photo and/or paste the product page link. AI identifies it and fills the sourcing searches, competitor searches and the SEO listing (step G).</p>
+  <label class="drop" id="drop">
+    <img id="thumb" alt="">
+    <div class="dt"><b>Upload product image</b><br>Click or drop a photo (JPG/PNG) — the eBay or supplier image works.</div>
+    <input type="file" id="file" accept="image/*" class="hidden">
+  </label>
+  <div style="margin-top:10px" class="inline">
+    <input type="url" id="url" placeholder="Product page link (AliExpress, eBay, Amazon…)">
+  </div>
+  <div style="margin-top:8px" class="inline">
+    <input type="text" id="pname" placeholder="Product name / notes (optional, e.g. car phone holder magnetic)">
+    <button class="primary" id="analyze">✨ Analyse product</button>
+  </div>
+  <div id="aiStatus" style="margin-top:10px"></div>
+</section>
+
+<!-- B -->
+<section class="card" id="b">
+  <h2><span class="l">B</span>Sourcing — find the cheapest supplier</h2>
+  <p class="hint">Open each market, then type the best offers below. The cheapest landed cost (price + shipping + GST) is highlighted — click <b>Use</b> to send it to the calculator.</p>
+  <div class="inline" style="margin-bottom:8px"><input type="text" id="srcQ" placeholder="Sourcing search keywords"></div>
+  <div class="links" id="srcLinks"></div>
+  <table class="sup" style="margin-top:10px">
+    <thead><tr><th>Supplier</th><th class="num">Item price</th><th class="num">Shipping</th><th class="num">Landed</th><th></th><th></th></tr></thead>
+    <tbody id="supRows"></tbody>
+  </table>
+  <div class="inline" style="margin-top:8px"><button id="addSup">+ Add supplier</button>
+    <label style="font-size:13px;color:var(--muted);display:flex;gap:6px;align-items:center"><input type="checkbox" id="supGst" checked style="width:auto"> Add 10% GST to imports (AliExpress/Temu charge it at checkout)</label></div>
+</section>
+
+<!-- C -->
+<section class="card" id="c">
+  <h2><span class="l">C</span>Competitors on eBay Australia</h2>
+  <p class="hint">Check <b>sold</b> listings first — they show what buyers actually pay. Type the total prices (incl. postage) of your main competitors.</p>
+  <div class="inline" style="margin-bottom:8px"><input type="text" id="compQ" placeholder="eBay search keywords"></div>
+  <div class="links" id="compLinks"></div>
+  <textarea id="comps" rows="2" style="margin-top:10px;font:13px 'JetBrains Mono',monospace" placeholder="e.g. 22.99, 25.50, 24.95, 27">22.99, 24.95, 25.50, 26.99, 23.49</textarea>
+  <div id="compStats" style="margin-top:10px"></div>
+</section>
+
+<!-- D -->
+<section class="card" id="d">
+  <h2><span class="l">D</span>eBay fees & tax (Australia)</h2>
+  <p class="hint">Rates from eBay.com.au fee pages (updated Oct–Nov 2026). Fees are charged on the total sale (item + postage charged), GST included.</p>
+  <div class="cols">
+    <div>
+      <div class="row wide"><label>Your seller plan<small id="planHint"></small></label>
+        <select id="plan">
+          <option value="free">Free selling (≤ $25k sales/yr)</option>
+          <option value="starter" selected>Pro Starter (no monthly fee)</option>
+          <option value="basic">Pro Basic ($27.45/mo)</option>
+          <option value="featured">Pro Featured ($82.45/mo)</option>
+          <option value="anchor">Pro Anchor ($604.95/mo)</option>
+        </select></div>
+      <div class="row wide"><label>Category<small>Sets the fee tier on paid Pro plans</small></label>
+        <select id="tier">
+          <option value="t2" selected>Most categories (incl. Home & Kitchen)</option>
+          <option value="t3">Vehicle Parts & Accessories (Automotive)</option>
+          <option value="t1">Tech devices / Home appliances</option>
+          <option value="t4">Fashion, Sporting, Collectables, Tech accessories, B&I</option>
+        </select></div>
+      <div class="row wide"><label>Buyer location<small>International sales add an extra fee</small></label>
+        <div class="toggle" id="dest"><button data-v="au" class="on">Australia</button><button data-v="intl">Overseas</button></div></div>
+    </div>
+    <div>
+      <div class="row"><label>Final value fee<small>Auto from plan + category (editable)</small></label><div class="field"><input id="feePct" type="number" step="0.01" min="0"><span class="u">%</span></div></div>
+      <div class="row"><label>Fixed fee per order</label><div class="field pre"><span class="u">$</span><input id="fixed" type="number" step="0.01" min="0"></div></div>
+      <div class="row"><label>Promoted Listings rate<small>Ad % you choose, 0 if none</small></label><div class="field"><input id="adPct" type="number" step="0.1" min="0" value="0"><span class="u">%</span></div></div>
+      <div class="row"><label>GST registered (ABN)?<small>Pay 1/11 of sale to ATO, claim GST on fees</small></label><div class="toggle" id="gst"><button data-v="no" class="on">No</button><button data-v="yes">Yes</button></div></div>
+    </div>
+  </div>
+  <div id="feeNote"></div>
+</section>
+
+<!-- E -->
+<section class="card" id="e">
+  <h2><span class="l">E</span>Costs & postage</h2>
+  <p class="hint">Minimum postage = cheapest tracked label for your parcel size. Presets are eBay label "from" prices (interstate metro); your exact price shows when you buy the label.</p>
+  <div class="cols">
+    <div>
+      <h3>Sourcing costs</h3>
+      <div class="row"><label>Item cost<small>Supplier price</small></label><div class="field pre"><span class="u">$</span><input id="cost" type="number" step="0.01" min="0" value="16.03"></div></div>
+      <div class="row"><label>Tax on purchase<small>GST paid on import, if not in cost</small></label><div class="field pre"><span class="u">$</span><input id="srcTax" type="number" step="0.01" min="0" value="0"></div></div>
+      <div class="row"><label>Sourcing shipping<small>Supplier → you</small></label><div class="field pre"><span class="u">$</span><input id="srcShip" type="number" step="0.01" min="0" value="0"></div></div>
+      <div class="row"><label>Packaging & other<small>Satchel, bubble wrap…</small></label><div class="field pre"><span class="u">$</span><input id="pack" type="number" step="0.01" min="0" value="0"></div></div>
+    </div>
+    <div>
+      <h3>Postage to buyer</h3>
+      <div class="row wide"><label>Parcel size</label>
+        <select id="postPreset">
+          <option value="custom">Custom amount</option>
+          <option value="6.05">Up to 250g — from $6.05</option>
+          <option value="7.15">Up to 500g — from $7.15</option>
+          <option value="8.80">Up to 1kg — from $8.80</option>
+          <option value="10.45">Up to 3kg — from $10.45</option>
+          <option value="13.20">Up to 5kg — from $13.20</option>
+        </select></div>
+      <div class="row"><label>Your postage cost<small>What you pay for the label</small></label><div class="field pre"><span class="u">$</span><input id="postage" type="number" step="0.01" min="0" value="2"></div></div>
+      <div class="row"><label>Overseas postage<small>Extra cost if posting abroad</small></label><div class="field pre"><span class="u">$</span><input id="overseas" type="number" step="0.01" min="0" value="0"></div></div>
+      <div class="row"><label>Postage charged to buyer<small>0 = free postage</small></label><div class="field pre"><span class="u">$</span><input id="postCharged" type="number" step="0.01" min="0" value="0"></div></div>
+    </div>
+  </div>
+  <div id="postNote"></div>
+</section>
+
+<!-- G -->
+<section class="card" id="g">
+  <h2><span class="l">G</span>SEO listing — title, keywords, description</h2>
+  <p class="hint">Run <b>Analyse product</b> in step A. eBay's search (Cassini) ranks titles that use the exact words buyers type, so the main keyword goes first and all 80 characters get used.</p>
+  <div id="seo"><p class="note info">Your SEO title, keywords, item specifics and description will appear here.</p></div>
+</section>
+</main>
+
+<!-- F (sticky side) -->
+<aside class="side">
+<section class="card" id="f">
+  <h2><span class="l">F</span>Profit & price</h2>
+  <div class="row" style="margin-top:12px"><label>Your selling price<small id="buyerSees"></small></label><div class="field pre"><span class="u">$</span><input id="price" type="number" step="0.01" min="0" value="24"></div></div>
+  <div class="hero">
+    <div class="tile"><div class="k">Net profit</div><div class="v" id="oProfit">–</div></div>
+    <div class="tile"><div class="k">Margin</div><div class="v" id="oMargin">–</div></div>
+    <div class="tile"><div class="k">ROI</div><div class="v" id="oRoi">–</div></div>
+  </div>
+  <div class="bar" id="bar"></div>
+  <div class="legend" id="legend"></div>
+  <table class="bd" id="breakdown"></table>
+  <h3>Key prices</h3>
+  <div class="kv"><span>Break-even price</span><b id="oBreak">–</b></div>
+  <div class="kv"><span>Price for <input id="target" type="number" value="20" min="0" max="80" style="width:52px;padding:2px 6px;font-size:13px">% margin</span><b id="oTarget">–</b></div>
+  <div class="kv" style="border:none"><span>eBay takes (fees ÷ sale)</span><b id="oFeeRate">–</b></div>
+  <h3>Recommended price</h3>
+  <div id="recNote"></div>
+  <div class="tiers" id="tiers" style="grid-template-columns:1fr"></div>
+  <div class="inline"><button class="primary" id="useRec">Use recommended</button><button id="copy">Copy summary</button><button id="reset">Reset</button></div>
+</section>
+<p class="foot">Fee sources: <a href="https://www.ebay.com.au/help/selling/selling-fees/ebay-stores-selling-fees?id=4809">eBay Pro fees</a> · <a href="https://www.ebay.com.au/help/selling/fees-credits-invoices/standard-selling-fees?id=4822">Free selling</a> · <a href="https://www.ebay.com.au/sellercentre/delivery-network">eBay postage</a>. Rates change — check Seller Hub before relying on them.</p>
+</aside>
+</div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"");
+const n=v=>{const x=parseFloat(v);return isFinite(x)?x:0};
+const money=v=>(v<0?"−":"")+"$"+Math.abs(v).toFixed(2);
+const pct=v=>isFinite(v)?(v*100).toFixed(1)+"%":"–";
+const cls=v=>v>=0?"pos":"neg";
+
+/* ---------- eBay AU fee tables (incl. GST) ---------- */
+const PLANS={
+  free:{name:"Free selling",fvf:{t1:0,t2:0,t3:0,t4:0},fixed:0,over:0,intl:.03,bpf:true,hint:"$0 final value fee. Buyer pays a Buyer Protection fee on top."},
+  starter:{name:"Pro Starter",fvf:{t1:13.4,t2:13.4,t3:13.4,t4:13.4},fixed:.30,over:2.5,intl:.011,hint:"13.4% + $0.30 per order. No monthly fee."},
+  basic:{name:"Pro Basic",fvf:{t1:8.03,t2:11.44,t3:12.43,t4:13.09},fixed:.33,over:2.75,intl:.011,hint:"$27.45/month + lower fees."},
+  featured:{name:"Pro Featured",fvf:{t1:7.26,t2:10.34,t3:11.22,t4:11.77},fixed:.33,over:2.75,intl:.011,hint:"$82.45/month."},
+  anchor:{name:"Pro Anchor",fvf:{t1:6.82,t2:9.68,t3:10.56,t4:11.11},fixed:.33,over:2.75,intl:.011,hint:"$604.95/month."}
+};
+let dest="au",gst="no";
+
+function bpf(p){ // Buyer Protection fee (free selling) – paid by buyer
+  const a=Math.min(p,20)*.08+Math.max(0,Math.min(p,500)-20)*.06+Math.max(0,p-500)*.04;return p>0?a+.30:0}
+
+function read(){return{price:n($("price").value),cost:n($("cost").value),srcTax:n($("srcTax").value),srcShip:n($("srcShip").value),
+  pack:n($("pack").value),postage:n($("postage").value),overseas:n($("overseas").value),postCharged:n($("postCharged").value),
+  fee:n($("feePct").value)/100,fixed:n($("fixed").value),ad:n($("adPct").value)/100,target:n($("target").value)/100,
+  plan:PLANS[$("plan").value],intl:dest==="intl",gst:gst==="yes"}}
+
+function calc(d,price){
+  const total=price+d.postCharged;
+  const fvf=Math.min(total,4000)*d.fee+Math.max(0,total-4000)*(d.plan.over/100);
+  const intlFee=d.intl?total*d.plan.intl:0;
+  const ad=total*d.ad;
+  const fees=fvf+d.fixed+intlFee+ad;
+  const source=d.cost+d.srcTax+d.srcShip+d.pack;
+  const post=d.postage+(d.intl?d.overseas:0)+(!d.intl?d.overseas:0);
+  const gstNet=d.gst?Math.max(0,(total-fees)/11):0;
+  const costs=source+post;
+  const profit=total-fees-costs-gstNet;
+  const buyer=total+(d.plan.bpf?bpf(price):0);
+  return{total,fvf,intlFee,ad,fees,source,post,gstNet,costs,profit,buyer,margin:price>0?profit/total:NaN,roi:costs>0?profit/costs:NaN};
+}
+function solve(fn,goal){let lo=0,hi=100000;for(let i=0;i<80;i++){const m=(lo+hi)/2;if(fn(m)<goal)lo=m;else hi=m}return hi>=99999?Infinity:hi}
+const priceForMargin=(d,m)=>solve(p=>p<=0?-1e9:calc(d,p).profit/(p+d.postCharged),m);
+const priceForBuyer=(d,b)=>solve(p=>calc(d,p).buyer,b);
+function charm(p,dir){const b=Math.floor(p);const o=[b-0.01,b+0.49,b+0.99];
+  if(dir==="up"){for(const x of o)if(x>=p-1e-9)return x;return b+1.49}
+  for(let i=o.length-1;i>=0;i--)if(o[i]<=p+1e-9)return o[i];return p}
+function parseComps(){return($("comps").value.match(/\d+(?:\.\d+)?/g)||[]).map(Number).filter(x=>x>0).sort((a,b)=>a-b)}
+const median=a=>{const m=Math.floor(a.length/2);return a.length%2?a[m]:(a[m-1]+a[m])/2};
+
+/* ---------- plan → fee fields ---------- */
+function applyPlan(){const p=PLANS[$("plan").value];$("feePct").value=p.fvf[$("tier").value];$("fixed").value=p.fixed.toFixed(2);render()}
+$("plan").addEventListener("change",applyPlan);$("tier").addEventListener("change",applyPlan);
+function toggle(id,set){$(id).querySelectorAll("button").forEach(b=>b.onclick=()=>{$(id).querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));set(b.dataset.v);render()})}
+toggle("dest",v=>dest=v);toggle("gst",v=>gst=v);
+$("postPreset").addEventListener("change",()=>{const v=$("postPreset").value;if(v!=="custom")$("postage").value=v;render()});
+
+/* ---------- render ---------- */
+let recPrice=null;
+function render(){
+  const d=read(),r=calc(d,d.price);
+  $("planHint").textContent=d.plan.hint;
+  $("oProfit").textContent=money(r.profit);$("oProfit").className="v "+cls(r.profit);
+  $("oMargin").textContent=pct(r.margin);$("oMargin").className="v "+cls(r.profit);
+  $("oRoi").textContent=pct(r.roi);$("oRoi").className="v "+cls(r.profit);
+  $("buyerSees").textContent=d.plan.bpf?`Buyer sees ${money(r.buyer)} (incl. Buyer Protection fee ${money(r.buyer-r.total)})`:(d.postCharged?`Buyer pays ${money(r.total)} incl. postage`:"Free postage · GST included");
+
+  const rows=[["Sale total (buyer pays you)",r.total,""],["eBay final value fee ("+(d.fee*100).toFixed(2)+"%)",-r.fvf,"m"],["Fixed order fee",-d.fixed,"m"]];
+  if(r.intlFee)rows.push(["International fee ("+(d.plan.intl*100).toFixed(1)+"%)",-r.intlFee,"m"]);
+  if(r.ad)rows.push(["Promoted Listings",-r.ad,"m"]);
+  rows.push(["Item cost",-d.cost,"m"]);
+  if(d.srcTax)rows.push(["Tax on purchase",-d.srcTax,"m"]);
+  if(d.srcShip)rows.push(["Sourcing shipping",-d.srcShip,"m"]);
+  if(d.pack)rows.push(["Packaging & other",-d.pack,"m"]);
+  rows.push(["Postage to buyer",-d.postage,"m"]);
+  if(d.overseas)rows.push(["Overseas postage",-d.overseas,"m"]);
+  if(r.gstNet)rows.push(["GST to ATO (net of fee credits)",-r.gstNet,"m"]);
+  const tb=$("breakdown");tb.innerHTML="";
+  rows.forEach(([k,v,c])=>{const tr=tb.insertRow();tr.className=c;tr.insertCell().textContent=k;tr.insertCell().textContent=money(v)});
+  const tr=tb.insertRow();tr.className="t";tr.insertCell().textContent="Net profit";const c2=tr.insertCell();c2.textContent=money(r.profit);c2.className=cls(r.profit);
+
+  const parts=[["Product",r.source,"#8a94a6"],["Postage",r.post,"#e0a33a"],["eBay fees",r.fees,"#d9644f"],["GST",r.gstNet,"#9b7bd6"],["Profit",Math.max(r.profit,0),"#2f9e62"]].filter(p=>p[1]>0);
+  const tot=parts.reduce((s,p)=>s+p[1],0)||1;
+  $("bar").innerHTML=parts.map(p=>`<i style="width:${p[1]/tot*100}%;background:${p[2]}"></i>`).join("");
+  $("legend").innerHTML=parts.map(p=>`<span style="--c:${p[2]}">${p[0]} ${(p[1]/tot*100).toFixed(0)}%</span>`).join("");
+
+  const be=priceForMargin(d,0),tp=priceForMargin(d,d.target);
+  $("oBreak").textContent=isFinite(be)?money(be):"n/a";
+  $("oTarget").textContent=isFinite(tp)?money(tp):"n/a";
+  $("oFeeRate").textContent=r.total?pct(r.fees/r.total):"–";
+
+  // fee note
+  let fn="";
+  if($("plan").value==="free")fn=`<p class="note good">Free selling: eBay charges you <b>$0</b> final value fee on domestic sales while your sales stay under $25,000 over 12 months. The buyer pays a Buyer Protection fee (8% of the first $20, 6% up to $500, 4% above, + $0.30) on top — so buyers see a higher price than Pro sellers' listings.</p>`;
+  else if($("plan").value==="starter")fn=`<p class="note info">Pro Starter: <b>13.4%</b> of the total sale + <b>$0.30</b> per order, all categories. If you've sold under $25,000 in the last 12 months and aren't on a Pro plan, you may qualify for free selling — check your plan in Seller Hub.</p>`;
+  else fn=`<p class="note info">${esc(d.plan.name)}: ${(d.fee*100).toFixed(2)}% + $0.33 per order in this category. International sales add 1.1%.</p>`;
+  if(d.intl)fn+=`<p class="note warn">Overseas buyer: international fee of ${(d.plan.intl*100).toFixed(1)}% applies to the total sale.</p>`;
+  $("feeNote").innerHTML=fn;
+  $("postNote").innerHTML=d.postage<4.95?`<p class="note warn">Postage of ${money(d.postage)} is below eBay's cheapest tracked label (from $4.95 for 250g local). That only works with untracked letters or bulk rates — use a realistic figure, or you'll overstate profit.</p>`:"";
+
+  // competitors
+  const c=parseComps(),cs=$("compStats");
+  if(!c.length)cs.innerHTML='<p class="note info">Add competitor prices to compare.</p>';
+  else{const lo=c[0],hi=c[c.length-1],med=median(c),diff=r.buyer-med,rank=c.filter(x=>x<r.buyer).length;
+    cs.innerHTML=`<div class="cols"><div><div class="kv"><span>Lowest</span><b>${money(lo)}</b></div><div class="kv"><span>Median</span><b>${money(med)}</b></div></div>
+    <div><div class="kv"><span>Highest</span><b>${money(hi)}</b></div><div class="kv"><span>You vs median</span><b class="${diff<=0?"pos":"neg"}">${diff>0?"+":""}${money(diff)}</b></div></div></div>
+    <p class="note ${rank===0?"good":rank<=c.length/2?"info":"warn"}" style="margin-top:8px">${rank===0?`At ${money(r.buyer)} you're the cheapest of ${c.length} listings.`:`${rank} of ${c.length} competitors are cheaper than your ${money(r.buyer)}.`}</p>`}
+
+  // recommendation (in buyer-visible price)
+  let tiers=[],note="",nc="info";
+  const toList=b=>charm(priceForBuyer(d,b),"down");
+  if(!isFinite(tp)){note="Fees + target margin are 100% or more — lower the target margin.";nc="bad";recPrice=null}
+  else if(!c.length){recPrice=charm(tp,"up");tiers=[["Target margin",recPrice,true],["Break-even",charm(be,"up"),false]];note="No competitor prices yet — this is cost-based only. Add 3–5 sold prices in step C.";}
+  else{const lo=c[0],med=median(c),tgt=charm(tp,"up"),tgtBuyer=calc(d,tgt).buyer;
+    const fast=toList(lo-0.01),bal=toList(med);
+    if(tgtBuyer<=lo){recPrice=fast;note=`Room to undercut: price just below the cheapest (${money(lo)}) and still beat your ${(d.target*100).toFixed(0)}% target.`;nc="good"}
+    else if(tgtBuyer<=med){recPrice=tgt;note=`Your target price is under the market median (${money(med)}) — competitive and on-target.`;nc="good"}
+    else if(calc(d,bal).profit>0){recPrice=bal;note=`Buyers won't pay ${money(tgtBuyer)} for a ${(d.target*100).toFixed(0)}% margin. At the median you earn ${pct(calc(d,bal).margin)} — find cheaper sourcing (step B) or postage (step E).`;nc="warn"}
+    else{recPrice=null;note=`Even the median (${money(med)}) is below your break-even. This product loses money at these costs — re-source or skip it.`;nc="bad"}
+    tiers=[["Fast sale",fast,recPrice===fast],["Market median",bal,recPrice===bal&&recPrice!==fast],["Your target",tgt,recPrice===tgt&&recPrice!==fast&&recPrice!==bal]];}
+  $("recNote").innerHTML=`<p class="note ${nc}">${note}</p>`;
+  $("tiers").innerHTML=tiers.map(([t,p,rec])=>{const x=calc(d,p);return`<div class="tier${rec?" rec":""}">${rec?'<span class="badge">Recommended</span>':""}<div class="t">${t}</div><div class="p">${money(p)}</div><div class="m"><span class="${cls(x.profit)}">${money(x.profit)}</span> profit · ${pct(x.margin)}${d.plan.bpf?` · buyer sees ${money(x.buyer)}`:""}</div></div>`}).join("");
+  $("useRec").disabled=recPrice===null;
+  renderSup();save();
+}
+
+/* ---------- sourcing + competitor links ---------- */
+const enc=encodeURIComponent;
+function linkList(el,items){el.innerHTML="";items.forEach(([t,u])=>{const a=document.createElement("a");a.href=u;a.target="_blank";a.rel="noopener";a.textContent=t;el.appendChild(a)})}
+function renderLinks(){
+  const s=$("srcQ").value.trim()||$("pname").value.trim()||"product",q=enc(s);
+  linkList($("srcLinks"),[["AliExpress","https://www.aliexpress.com/wholesale?SearchText="+q+"&SortType=total_tranpro_desc"],["Alibaba","https://www.alibaba.com/trade/search?SearchText="+q],["Temu AU","https://www.temu.com/au/search_result.html?search_key="+q],["CJ Dropshipping","https://cjdropshipping.com/search/"+q+".html"],["DHgate","https://www.dhgate.com/wholesale/search.do?searchkey="+q],["Amazon AU","https://www.amazon.com.au/s?k="+q],["1688 (China)","https://s.1688.com/selloffer/offer_search.htm?keywords="+q]]);
+  const c=enc($("compQ").value.trim()||s);
+  linkList($("compLinks"),[["Sold listings (AU)","https://www.ebay.com.au/sch/i.html?_nkw="+c+"&LH_Sold=1&LH_Complete=1&LH_PrefLoc=1"],["Lowest price + postage","https://www.ebay.com.au/sch/i.html?_nkw="+c+"&_sop=15&LH_PrefLoc=1"],["Best match (top sellers)","https://www.ebay.com.au/sch/i.html?_nkw="+c+"&_sop=12"],["Terapeak research","https://www.ebay.com.au/sh/research?keywords="+c+"&marketplace=EBAY-AU&tabName=SOLD"],["Amazon AU price check","https://www.amazon.com.au/s?k="+c]]);
+}
+["srcQ","compQ","pname"].forEach(i=>$(i).addEventListener("input",()=>{renderLinks();save()}));
+
+/* supplier table */
+let sups=[{name:"AliExpress",price:16.03,ship:0}];
+function landed(s){return(s.price+s.ship)*($("supGst").checked?1.1:1)}
+function renderSup(){
+  const tb=$("supRows");if(tb.dataset.busy)return;tb.innerHTML="";
+  const valid=sups.filter(s=>s.price>0);const best=valid.length?valid.reduce((a,b)=>landed(a)<=landed(b)?a:b):null;
+  sups.forEach((s,i)=>{const tr=tb.insertRow();if(s===best&&valid.length>1)tr.className="best";
+    const mk=(k,type)=>{const td=tr.insertCell();if(type!=="text")td.className="num";const inp=document.createElement("input");inp.type=type;inp.value=type==="number"?(s[k]??0):(s[k]||"");if(type==="number"){inp.step="0.01";inp.style.textAlign="right"}
+      inp.oninput=()=>{s[k]=type==="number"?n(inp.value):inp.value;tb.dataset.busy=1;updLanded();delete tb.dataset.busy;save()};inp.onchange=render;td.appendChild(inp)};
+    mk("name","text");mk("price","number");mk("ship","number");
+    const l=tr.insertCell();l.className="num";l.textContent=money(landed(s));
+    const u=tr.insertCell();const b=document.createElement("button");b.textContent="Use";b.onclick=()=>{$("cost").value=s.price.toFixed(2);$("srcShip").value=s.ship.toFixed(2);$("srcTax").value=$("supGst").checked?((s.price+s.ship)*.1).toFixed(2):"0";render()};u.appendChild(b);
+    const x=tr.insertCell();const xb=document.createElement("button");xb.className="x";xb.textContent="✕";xb.onclick=()=>{sups.splice(i,1);render()};x.appendChild(xb)});
+  function updLanded(){[...tb.rows].forEach((tr,i)=>{if(sups[i])tr.cells[3].textContent=money(landed(sups[i]))})}
+}
+$("addSup").onclick=()=>{sups.push({name:"",price:0,ship:0});render()};
+$("supGst").onchange=render;
+
+/* ---------- AI analysis (sample capability) ---------- */
+let imgBlob=null,sample=null;
+const drop=$("drop");
+function setImg(f){if(!f||!f.type.startsWith("image/"))return;imgBlob=f;const t=$("thumb");t.src=URL.createObjectURL(f);t.style.display="block"}
+$("file").onchange=e=>setImg(e.target.files[0]);
+drop.addEventListener("dragover",e=>{e.preventDefault();drop.classList.add("over")});
+drop.addEventListener("dragleave",()=>drop.classList.remove("over"));
+drop.addEventListener("drop",e=>{e.preventDefault();drop.classList.remove("over");setImg(e.dataTransfer.files[0])});
+
+(async()=>{try{sample=await window.claude?.use("sample")}catch(e){sample=null}
+  if(!sample){$("analyze").disabled=true;$("aiStatus").innerHTML='<p class="note warn">AI analysis isn\'t available in this view. Type your keywords in steps B and C — the links and calculator still work.</p>'}})();
+
+function status(html,c="info"){$("aiStatus").innerHTML=`<p class="note ${c}">${html}</p>`}
+$("analyze").onclick=async()=>{
+  if(!sample)return;
+  const url=$("url").value.trim(),name=$("pname").value.trim();
+  if(!imgBlob&&!url&&!name){status("Add an image, a link or a product name first.","warn");return}
+  $("analyze").disabled=true;status('<span class="spin"></span> Analysing product and writing your listing…');
+  const d=read();
+  const prompt=`You are an expert eBay Australia (ebay.com.au) seller and SEO specialist. Identify the product from the inputs and return ONLY JSON.
+Inputs:
+- Product page link (you cannot open it; use any words in the URL as clues): ${url||"none"}
+- Seller notes: ${name||"none"}
+- An image is attached: ${imgBlob?"yes":"no"}
+- Planned selling price AUD: ${d.price}
+
+Return JSON with exactly these keys:
+{"product":"short product name","category_path":"best eBay AU category path","fee_tier":"t1|t2|t3|t4" (t1=tech devices/home appliances, t3=vehicle parts & accessories, t4=fashion/sporting/collectables/tech accessories/business&industrial, t2=everything else),
+"sourcing_query":"best 3-6 word supplier search term (English, as used on AliExpress)","ebay_query":"3-6 word term Australian buyers type on eBay",
+"title":"eBay title, max 80 characters, main keyword first, include key attributes (size/colour/material/compatibility/qty), Australian spelling, no ALL CAPS, no special symbols, no 'L@@K' or 'NEW' unless needed",
+"title_alt":"second title variation, max 80 characters",
+"primary_keywords":["5-7 highest-intent search terms"],"long_tail_keywords":["8-12 long-tail phrases"],
+"item_specifics":[{"name":"Brand","value":"Unbranded"},... 6-10 relevant eBay item specifics],
+"description":"plain-text eBay description, 150-250 words: one-line hook, 5 benefit bullet lines starting with '• ', specs, 'What's in the box', and a short line on fast dispatch from Australia and easy returns. Natural keyword use, no keyword stuffing, no HTML, no external links or contact details.",
+"parcel":"one of: 250g, 500g, 1kg, 3kg, 5kg — the likely postage size",
+"tips":["3 short tips to win organic sales for this product on eBay AU"]}`;
+  try{
+    let opts={modelTier:"default"};
+    if(imgBlob){try{const lim=await sample.limits();if(lim&&lim.images)opts.images=[imgBlob]}catch(e){}}
+    const out=await sample.json(prompt,opts);
+    showSEO(out);status("Done — sourcing and competitor searches filled, fee category set, listing ready in step G.","good");
+  }catch(e){
+    if(e&&e.code==="not_granted"){status("AI permission wasn't granted. Click Analyse again to allow it.","warn")}
+    else if(e&&e.code==="rate_limited"){status("Too many requests — wait a minute and try again.","warn")}
+    else status("Couldn't analyse this time. Try again, or add a product name.","bad");
+  }finally{$("analyze").disabled=false}
+};
+
+function copyBtn(getText){const b=document.createElement("button");b.textContent="Copy";b.onclick=async()=>{try{await navigator.clipboard.writeText(getText());b.textContent="Copied ✓"}catch(e){b.textContent="Select & copy"}setTimeout(()=>b.textContent="Copy",1500)};return b}
+function box(title,count){const w=document.createElement("div");w.className="seo-out";const h=document.createElement("div");h.className="hd";const b=document.createElement("b");b.textContent=title;h.appendChild(b);const r=document.createElement("div");r.className="inline";if(count){const c=document.createElement("span");c.className="cnt";c.textContent=count;r.appendChild(c)}h.appendChild(r);w.appendChild(h);return[w,r]}
+function showSEO(o){
+  if(!o||typeof o!=="object")throw new Error("bad");
+  const str=v=>typeof v==="string"?v:"",arr=v=>Array.isArray(v)?v:[];
+  if(str(o.sourcing_query))$("srcQ").value=o.sourcing_query;
+  if(str(o.ebay_query))$("compQ").value=o.ebay_query;
+  if(!$("pname").value&&str(o.product))$("pname").value=o.product;
+  if(["t1","t2","t3","t4"].includes(o.fee_tier)){$("tier").value=o.fee_tier;applyPlan()}
+  const ps={"250g":"6.05","500g":"7.15","1kg":"8.80","3kg":"10.45","5kg":"13.20"}[str(o.parcel)];
+  if(ps){$("postPreset").value=ps;$("postage").value=ps}
+  renderLinks();
+  const g=$("seo");g.innerHTML="";
+  if(str(o.product)){const p=document.createElement("p");p.className="note info";p.textContent=`${o.product}${str(o.category_path)?" — category: "+o.category_path:""}${ps?" — suggested parcel: "+o.parcel:""}`;g.appendChild(p)}
+  [["SEO title",str(o.title)],["Alternative title",str(o.title_alt)]].forEach(([t,v])=>{if(!v)return;const[w,r]=box(t,v.length+"/80"+(v.length>80?" ⚠ too long":""));r.appendChild(copyBtn(()=>v));const d=document.createElement("div");d.style.fontWeight="600";d.textContent=v;w.appendChild(d);g.appendChild(w)});
+  const kw=[...arr(o.primary_keywords).map(k=>[k,1]),...arr(o.long_tail_keywords).map(k=>[k,0])];
+  if(kw.length){const[w,r]=box("SEO keywords","bold = primary");r.appendChild(copyBtn(()=>kw.map(k=>k[0]).join(", ")));const c=document.createElement("div");c.className="chips";kw.forEach(([k,p])=>{const s=document.createElement("span");s.className="chip"+(p?" p":"");s.textContent=k;c.appendChild(s)});w.appendChild(c);g.appendChild(w)}
+  const sp=arr(o.item_specifics).filter(x=>x&&x.name);
+  if(sp.length){const[w,r]=box("Item specifics");r.appendChild(copyBtn(()=>sp.map(x=>x.name+": "+x.value).join("\n")));const t=document.createElement("table");sp.forEach(x=>{const tr=t.insertRow();tr.insertCell().textContent=x.name;tr.insertCell().textContent=x.value});w.appendChild(t);g.appendChild(w)}
+  if(str(o.description)){const[w,r]=box("Description",o.description.split(/\s+/).length+" words");r.appendChild(copyBtn(()=>o.description));const d=document.createElement("div");d.style.whiteSpace="pre-wrap";d.style.fontSize="14px";d.textContent=o.description;w.appendChild(d);g.appendChild(w)}
+  const tips=arr(o.tips);if(tips.length){const[w]=box("Tips for organic sales");const ul=document.createElement("ul");ul.style.margin="0";ul.style.paddingLeft="18px";tips.forEach(t=>{const li=document.createElement("li");li.textContent=t;ul.appendChild(li)});w.appendChild(ul);g.appendChild(w)}
+  const gen=document.createElement("p");gen.className="foot";gen.textContent="AI-written — check facts (size, material, compatibility) against your supplier before listing.";g.appendChild(gen);
+  render();
+}
+
+/* ---------- buttons, storage ---------- */
+$("useRec").onclick=()=>{if(recPrice!==null){$("price").value=recPrice.toFixed(2);render()}};
+$("copy").onclick=async e=>{const d=read(),r=calc(d,d.price);
+  const t=`eBay Profit Pilot (eBay AU, ${d.plan.name})\nPrice ${money(d.price)} | eBay fees ${money(r.fees)} | Costs ${money(r.costs)}${r.gstNet?" | GST "+money(r.gstNet):""}\nNet profit ${money(r.profit)} | Margin ${pct(r.margin)} | ROI ${pct(r.roi)}\nBreak-even ${money(priceForMargin(d,0))} | ${(d.target*100).toFixed(0)}% margin price ${money(priceForMargin(d,d.target))}`+(recPrice!==null?`\nRecommended ${money(recPrice)}`:"");
+  try{await navigator.clipboard.writeText(t);e.target.textContent="Copied ✓"}catch(err){e.target.textContent="Copy blocked"}setTimeout(()=>e.target.textContent="Copy summary",1500)};
+const ids=["price","cost","srcTax","srcShip","pack","postage","overseas","postCharged","feePct","fixed","adPct","target","comps","plan","tier","postPreset","srcQ","compQ","pname","url"];
+const defaults={};
+function save(){try{const s={};ids.forEach(i=>s[i]=$(i).value);s.dest=dest;s.gst=gst;s.sups=sups;localStorage.setItem("epp2",JSON.stringify(s))}catch(e){}}
+function load(){try{const s=JSON.parse(localStorage.getItem("epp2")||"null");if(!s)return false;ids.forEach(i=>{if(s[i]!==undefined)$(i).value=s[i]});
+  if(s.dest){dest=s.dest;$("dest").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v===dest))}
+  if(s.gst){gst=s.gst;$("gst").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v===gst))}
+  if(Array.isArray(s.sups))sups=s.sups;return true}catch(e){return false}}
+ids.forEach(i=>$(i).addEventListener("input",render));
+$("reset").onclick=()=>{try{localStorage.removeItem("epp2")}catch(e){}ids.forEach(i=>$(i).value=defaults[i]);sups=[{name:"AliExpress",price:16.03,ship:0}];applyPlan();renderLinks()};
+const p0=PLANS.starter;$("feePct").value=p0.fvf.t2;$("fixed").value=p0.fixed.toFixed(2);
+ids.forEach(i=>defaults[i]=$(i).value);
+load();renderLinks();render();
+</script>
+</body>
+</html>
