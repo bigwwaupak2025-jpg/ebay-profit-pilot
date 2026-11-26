@@ -1,431 +1,50 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>eBay Profit Pilot</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>eBay Profit Pilot – Chrome extension</title>
 <style>
-:root{--bg:#f6f7f9;--card:#fff;--ink:#14171f;--muted:#5d6472;--line:#e3e6eb;--accent:#2457d6;--accent-soft:#e8eefc;
---good:#16834a;--good-soft:#e5f5ec;--warn:#a35600;--warn-soft:#fdf1e2;--bad:#c4321f;--bad-soft:#fdeae7}
-@media (prefers-color-scheme:dark){:root{--bg:#0f1115;--card:#171a21;--ink:#eceef2;--muted:#9aa1ad;--line:#2a2f39;--accent:#6d93f2;--accent-soft:#1c2540;
---good:#4cc584;--good-soft:#14281e;--warn:#f0a548;--warn-soft:#2d2213;--bad:#f07a68;--bad-soft:#2f1714}}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 Inter,system-ui,sans-serif}
-.wrap{max-width:1180px;margin:0 auto;padding:26px 18px 56px}
-header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:16px}
-h1{margin:0;font-size:27px;letter-spacing:-.02em}h1 span{color:var(--accent)}
-.sub{color:var(--muted);margin:4px 0 0}
-.pill{display:inline-flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:99px;padding:6px 12px;font-size:13px;color:var(--muted)}
-.layout{display:grid;grid-template-columns:minmax(0,1fr) 390px;gap:20px;align-items:start}
-@media (max-width:960px){.layout{grid-template-columns:1fr}.side{order:-1}}
-.side{position:sticky;top:14px}@media (max-width:960px){.side{position:static}}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px;scroll-margin-top:12px}
-.card h2{display:flex;align-items:center;gap:10px;font-size:16px;margin:0 0 4px}
-.card h2 .l{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:8px;background:var(--accent);color:#fff;font-size:13px}
-.hint{color:var(--muted);font-size:13px;margin:0 0 14px}
-h3{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:14px 0 8px;font-weight:600}
-select,input,textarea{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
-input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:transparent}
-textarea{width:100%;resize:vertical}
-.row{display:grid;grid-template-columns:1fr 140px;align-items:center;gap:10px;margin-bottom:10px}
-.row label{font-weight:500}.row small{display:block;color:var(--muted);font-weight:400;font-size:12px}
-.row select{width:100%}.row.wide{grid-template-columns:minmax(0,.9fr) minmax(0,1.3fr)}
-.field{position:relative}.field input{width:100%;text-align:right;font-family:'JetBrains Mono',monospace;padding-right:28px}
-.field .u{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;pointer-events:none}
-.field.pre input{padding-left:24px;padding-right:10px}.field.pre .u{left:10px;right:auto}
-.cols{display:grid;grid-template-columns:1fr 1fr;gap:0 24px}@media (max-width:700px){.cols{grid-template-columns:1fr}}
-.drop{border:1.5px dashed var(--line);border-radius:12px;padding:12px;display:flex;gap:14px;align-items:center;cursor:pointer;min-height:76px}
-.drop:hover,.drop.over{border-color:var(--accent);background:var(--accent-soft)}
-.drop img{width:60px;height:60px;object-fit:cover;border-radius:8px;display:none}.drop .dt{font-size:13.5px;color:var(--muted)}.drop .dt b{color:var(--ink)}
-.inline{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.inline input[type=text],.inline input[type=url],.inline input[type=password]{flex:1;min-width:180px}
-button{font:500 13px Inter,sans-serif;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:8px 12px;cursor:pointer}
-button:hover{border-color:var(--accent);color:var(--accent)}button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
-button.primary:hover{opacity:.9;color:#fff}button:disabled{opacity:.5;cursor:default}
-.links{display:flex;flex-wrap:wrap;gap:8px}.links a{font-size:13px;font-weight:500;text-decoration:none;color:var(--accent);background:var(--accent-soft);border-radius:8px;padding:6px 10px}
-.links a:hover{text-decoration:underline}
-table{width:100%;border-collapse:collapse;font-size:14px}td,th{padding:7px 4px;border-bottom:1px solid var(--line);text-align:left}
-.answer{border-radius:14px;padding:16px;margin:10px 0 14px;text-align:center}
-.answer.good{background:var(--good-soft)}.answer.warn{background:var(--warn-soft)}.answer.bad{background:var(--bad-soft)}
-.answer .k{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
-.answer .p{font:700 40px 'JetBrains Mono',monospace;letter-spacing:-.03em;margin:2px 0}
-.answer.good .p{color:var(--good)}.answer.warn .p{color:var(--warn)}.answer.bad .p{color:var(--bad)}
-.answer .s{font-size:13.5px}
-.hero{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px}
-.tile{border:1px solid var(--line);border-radius:12px;padding:10px}.tile .k{color:var(--muted);font-size:12px}
-.tile .v{font:600 19px 'JetBrains Mono',monospace;letter-spacing:-.02em;margin-top:2px}
-.pos{color:var(--good)}.neg{color:var(--bad)}
-.bd td{padding:5px 0;font-size:13.5px}.bd td:last-child{text-align:right;font-family:'JetBrains Mono',monospace}
-.bd tr.m td{color:var(--muted)}.bd tr.t td{font-weight:700;border-bottom:none;padding-top:8px}
-.kv{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid var(--line);font-size:13.5px}
-.kv b{font-family:'JetBrains Mono',monospace;font-weight:600;white-space:nowrap}
-.note{border-radius:10px;padding:10px 12px;font-size:13.5px;margin:0 0 12px}
-.note.good{background:var(--good-soft);color:var(--good)}.note.warn{background:var(--warn-soft);color:var(--warn)}
-.note.bad{background:var(--bad-soft);color:var(--bad)}.note.info{background:var(--accent-soft);color:var(--accent)}
-.seo-out{border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px}
-.seo-out .hd{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}.seo-out .hd b{font-size:13px}
-.cnt{font:12px 'JetBrains Mono',monospace;color:var(--muted)}
-.chips{display:flex;flex-wrap:wrap;gap:6px}.chip{font-size:12.5px;background:var(--bg);border:1px solid var(--line);border-radius:99px;padding:3px 10px}
-.chip.p{background:var(--accent-soft);border-color:transparent;color:var(--accent);font-weight:600}
-.spin{display:inline-block;width:14px;height:14px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:s .8s linear infinite;vertical-align:-2px}
-@keyframes s{to{transform:rotate(360deg)}}
-.hidden{display:none!important}
-.toggle{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}.toggle button{border:none;border-radius:0;flex:1;padding:7px 8px}
-.toggle button.on{background:var(--accent);color:#fff}
-details{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:12px}
-summary{cursor:pointer;font-weight:600;font-size:13.5px}
-.off td{font-size:13px}.off td:last-child{text-align:right;font-family:'JetBrains Mono',monospace}
-.src{font-size:12.5px;color:var(--muted)}.src a{color:var(--accent)}
-.ok{display:inline-block;font-size:11px;font-weight:700;background:var(--good-soft);color:var(--good);border-radius:99px;padding:2px 8px;vertical-align:1px}
-</style>
-</head>
-<body>
-<div class="wrap">
-<header>
-  <div><h1>eBay <span>Profit Pilot</span></h1>
-  <p class="sub">Paste your sourcing link → get the eBay Australia price that leaves you at least $8 profit after eBay fees and postage.</p></div>
-  <div class="pill">🇦🇺 eBay.com.au · AUD · official fees incl. GST</div>
-</header>
+body{margin:0;font:15px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#f4f6fb;color:#1a2233}
+main{max-width:760px;margin:0 auto;padding:28px 18px 60px}
+h1{font-size:28px;margin:0 0 4px}h1 b{color:#e53238}h1 i{color:#0064d2;font-style:normal}
+.sub{color:#5b6578;margin:0 0 22px}
+.card{background:#fff;border:1px solid #e2e6ef;border-radius:14px;padding:20px 22px;margin:0 0 16px}
+h2{font-size:18px;margin:0 0 10px}
+.btn{display:inline-block;background:#0064d2;color:#fff;text-decoration:none;font-weight:600;padding:12px 20px;border-radius:10px}
+ol{padding-left:22px;margin:8px 0}li{margin:6px 0}code{background:#eef1f7;padding:1px 6px;border-radius:5px}
+.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.flow div{background:#f7f9fd;border:1px solid #e2e6ef;border-radius:10px;padding:10px 12px;font-size:14px}
+.flow b{display:block;color:#0064d2}
+.warn{background:#fff8e6;border-color:#f3d48a}
+small,.muted{color:#5b6578}
+</style></head><body><main>
+<h1><b>eBay</b> <i>Profit Pilot</i></h1>
+<p class="sub">Chrome extension for eBay.com.au sellers sourcing from AliExpress. Official eBay AU fees, AUD, GST included.</p>
 
-<div class="layout">
-<main>
-<section class="card" id="a">
-  <h2><span class="l">A</span>Product & sourcing</h2>
-  <p class="hint">Paste the supplier link and your <b>total</b> sourcing cost (item + shipping to you + any tax). Click <b>Analyse with AI</b> for the SEO listing.</p>
-  <div class="inline" style="margin-bottom:8px"><input type="url" id="url" placeholder="Sourcing link (AliExpress, Temu, Alibaba, CJ…)"></div>
-  <div class="inline" style="margin-bottom:10px"><input type="text" id="pname" placeholder="Product name (e.g. magnetic car phone holder)"></div>
-  <div class="cols">
-    <div><div class="row"><label>Total sourcing cost<small>Item + shipping + tax, all in</small></label><div class="field pre"><span class="u">$</span><input id="cost" type="number" step="0.01" min="0" value="16.03"></div></div></div>
-    <div><label class="drop" id="drop"><img id="thumb" alt=""><div class="dt"><b>Product image (optional)</b><br>Helps AI identify it</div><input type="file" id="file" accept="image/*" class="hidden"></label></div>
-  </div>
-  <div class="inline" style="margin-top:12px"><button class="primary" id="analyze">✨ Analyse with AI</button><button id="copyPrompt">Copy AI prompt</button><span id="aiMode" class="src"></span></div>
-  <div id="aiStatus" style="margin-top:10px"></div>
-  <details id="aiSettings">
-    <summary>AI settings (for your own website / GitHub version)</summary>
-    <p class="hint" style="margin:8px 0">On the claude.ai link AI works automatically. On GitHub or any other website, paste your own Anthropic API key (from console.anthropic.com). It's saved only in this browser — never in the file or on GitHub.</p>
-    <div class="inline" style="margin-bottom:8px"><input type="password" id="apiKey" placeholder="sk-ant-..."><button id="saveKey">Save key</button><button id="clearKey">Remove</button></div>
-    <div class="inline"><label class="src">Model</label><input type="text" id="model" value="claude-sonnet-5-5" style="max-width:220px">
-      <label class="src" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="webSearch" checked style="width:auto"> Let AI search eBay AU for competitor prices</label></div>
-  </details>
-</section>
+<div class="card"><h2>What it does</h2>
+<div class="flow">
+<div><b>1 · Supplier</b>Reads the price, shipping (free or paid), discount and your total cost from the open AliExpress page.</div>
+<div><b>2 · eBay AU</b>Finds the same product on eBay Australia, with sold and active prices: lowest, median, highest.</div>
+<div><b>3 · Your price</b>Takes off eBay's fee and postage and recommends the price that keeps your minimum profit ($8).</div>
+<div><b>4 · SEO</b>Optional: writes an AI title, keywords, item specifics and a description.</div>
+<div><b>i · Reference</b>Official eBay fees by price, plus postage within Australia and overseas.</div>
+</div></div>
 
-<section class="card" id="b">
-  <h2><span class="l">B</span>Competitors on eBay Australia</h2>
-  <p class="hint">Use <b>sold</b> prices where you can (what buyers really paid). Type totals incl. postage, separated by commas. AI can fill these when web search is on — always open the links to confirm.</p>
-  <div class="inline" style="margin-bottom:8px"><input type="text" id="compQ" placeholder="eBay search keywords"></div>
-  <div class="links" id="compLinks"></div>
-  <textarea id="comps" rows="2" style="margin-top:10px;font:13px 'JetBrains Mono',monospace" placeholder="e.g. 29.95, 32.50, 34.99">29.95, 32.50, 34.99, 31.49, 36.00</textarea>
-  <div id="compSrc"></div>
-  <div id="compStats" style="margin-top:10px"></div>
-  <h3>Sourcing searches</h3>
-  <div class="links" id="srcLinks"></div>
-</section>
+<div class="card"><h2>Install (2 minutes)</h2>
+<p><a class="btn" href="ebay-profit-pilot-extension.zip" download>⬇ Download extension (.zip)</a></p>
+<ol>
+<li>Unzip the downloaded file into a folder, for example <code>ebay-profit-pilot</code>.</li>
+<li>In Chrome, open <code>chrome://extensions</code> and turn on <b>Developer mode</b> (top right).</li>
+<li>Click <b>Load unpacked</b> and choose the unzipped folder.</li>
+<li>Click the puzzle icon 🧩 and <b>pin</b> eBay Profit Pilot.</li>
+<li>Open an AliExpress product page, click the extension icon, and press <b>▶ Run all steps</b>.</li>
+</ol>
+<p class="muted">Stay logged in to eBay.com.au in Chrome; it helps the competitor search. For AI SEO, add your Anthropic API key in step 4. The key is stored only in your browser.</p></div>
 
-<section class="card" id="c">
-  <h2><span class="l">C</span>eBay fees & GST <span class="ok">OFFICIAL</span></h2>
-  <p class="hint">Rates copied from eBay.com.au's own fee pages — see "Official eBay rates used" below for every number and its source.</p>
-  <div class="cols">
-    <div>
-      <div class="row wide"><label>Your seller plan<small id="planHint"></small></label>
-        <select id="plan"><option value="free">Free selling (≤ $25k sales/yr)</option><option value="starter" selected>Pro Starter (no monthly fee)</option>
-        <option value="basic">Pro Basic ($27.45/mo)</option><option value="featured">Pro Featured ($82.45/mo)</option><option value="anchor">Pro Anchor ($604.95/mo)</option></select></div>
-      <div class="row wide"><label>Category<small>Fee tier on paid Pro plans</small></label>
-        <select id="tier"><option value="t2" selected>Most categories (incl. Home & Kitchen)</option><option value="t3">Vehicle Parts & Accessories</option>
-        <option value="t1">Tech devices / Home appliances</option><option value="t4">Fashion, Sporting, Collectables, Tech accessories</option></select></div>
-      <div class="row wide"><label>Buyer location</label><div class="toggle" id="dest"><button data-v="au" class="on">Australia</button><button data-v="intl">Overseas</button></div></div>
-    </div>
-    <div>
-      <div class="row"><label>Final value fee<small>Auto from plan + category</small></label><div class="field"><input id="feePct" type="number" step="0.01" min="0"><span class="u">%</span></div></div>
-      <div class="row"><label>Fixed fee per order</label><div class="field pre"><span class="u">$</span><input id="fixed" type="number" step="0.01" min="0"></div></div>
-      <div class="row"><label>Promoted Listings<small>Ad rate you set, 0 if none</small></label><div class="field"><input id="adPct" type="number" step="0.1" min="0" value="0"><span class="u">%</span></div></div>
-      <div class="row"><label>GST registered (ABN)?</label><div class="toggle" id="gst"><button data-v="no" class="on">No</button><button data-v="yes">Yes</button></div></div>
-    </div>
-  </div>
-  <div id="feeNote"></div>
-</section>
+<div class="card warn"><h2>Before you list, check</h2>
+<ul>
+<li>Set AliExpress to <b>Ship to: Australia</b> and <b>AUD</b>, so the price and shipping match what you will pay.</li>
+<li>In step 2, untick eBay listings that are not the same product.</li>
+<li>Choose the right parcel size; postage is the biggest cost after the product.</li>
+</ul></div>
 
-<section class="card" id="d">
-  <h2><span class="l">D</span>Postage to buyer <span class="ok">OFFICIAL</span></h2>
-  <p class="hint">eBay label rates. Each preset is the <b>highest</b> of eBay's Local / Interstate / Regional prices for that weight, so free postage covers any Australian buyer. Fuel surcharge is extra.</p>
-  <div class="cols">
-    <div>
-      <div class="row wide"><label>Parcel size</label>
-        <select id="postPreset"><option value="custom">Custom amount</option>
-        <option value="6.60" selected>Up to 250g — $6.60</option><option value="7.15">Up to 500g — $7.15</option><option value="9.90">Up to 1kg — $9.90</option>
-        <option value="11.00">Up to 3kg — $11.00</option><option value="13.20">Up to 5kg — $13.20</option><option value="16.50">Up to 10kg — $16.50</option></select></div>
-      <div class="row"><label>Postage you pay</label><div class="field pre"><span class="u">$</span><input id="postage" type="number" step="0.01" min="0" value="6.60"></div></div>
-    </div>
-    <div>
-      <div class="row"><label>Packaging<small>Satchel, bubble wrap</small></label><div class="field pre"><span class="u">$</span><input id="pack" type="number" step="0.01" min="0" value="0"></div></div>
-      <div class="row"><label>Postage charged to buyer<small>0 = free postage</small></label><div class="field pre"><span class="u">$</span><input id="postCharged" type="number" step="0.01" min="0" value="0"></div></div>
-    </div>
-  </div>
-</section>
-
-<section class="card" id="f">
-  <h2><span class="l">F</span>SEO listing — title, keywords, description</h2>
-  <p class="hint">Click <b>Analyse with AI</b> in step A. Main keyword first, all 80 characters used, every item specific filled — that's what eBay's search ranks for organic sales.</p>
-  <div id="seo"><p class="note info">Your SEO title, keywords, item specifics and description will appear here.</p></div>
-</section>
-
-<section class="card" id="off">
-  <h2>📋 Official eBay rates used <span class="ok">CHECKED 26 NOV 2026</span></h2>
-  <p class="hint">Every fee and postage number in this app, with the official eBay page it comes from. eBay can change rates — click a source to re-confirm.</p>
-  <table class="off">
-    <tr><td>Pro Starter final value fee (all categories)</td><td>13.4% + $0.30/order</td></tr>
-    <tr><td>Pro Basic — most / vehicle parts / tech devices / fashion etc.</td><td>11.44 / 12.43 / 8.03 / 13.09% + $0.33</td></tr>
-    <tr><td>Pro Featured — same order</td><td>10.34 / 11.22 / 7.26 / 11.77% + $0.33</td></tr>
-    <tr><td>Pro Anchor — same order</td><td>9.68 / 10.56 / 6.82 / 11.11% + $0.33</td></tr>
-    <tr><td>Portion of a sale above $4,000</td><td>2.5% (Starter) / 2.75%</td></tr>
-    <tr><td>Fee is charged on</td><td>item + postage + tax</td></tr>
-    <tr><td>International sale fee (Pro / free selling)</td><td>1.1% / 3%</td></tr>
-    <tr><td>Free selling (≤ $25,000 sales in 12 months, no Pro plan)</td><td>$0 final value fee</td></tr>
-    <tr><td>Buyer Protection fee (paid by buyer, free selling)</td><td>8% to $20, 6% to $500, 4% above + $0.30</td></tr>
-    <tr><td>GST</td><td>10%, included in all fees</td></tr>
-    <tr><td>Postage up to 250g / 500g / 1kg / 3kg / 5kg / 10kg (highest zone)</td><td>$6.60 / 7.15 / 9.90 / 11.00 / 13.20 / 16.50</td></tr>
-  </table>
-  <p class="src" style="margin-top:10px">Sources (eBay.com.au): <a href="https://www.ebay.com.au/help/selling/selling-fees/ebay-stores-selling-fees?id=4809" target="_blank" rel="noopener">eBay Pro selling fees</a> (updated 1 Nov 2026) ·
-  <a href="https://www.ebay.com.au/help/selling/fees-credits-invoices/standard-selling-fees?id=4822" target="_blank" rel="noopener">Free selling & standard fees</a> (updated 9 Oct 2026) ·
-  <a href="https://www.ebay.com.au/sellercentre/news-offers/more-info-on-recent-selling-updates" target="_blank" rel="noopener">Buyer Protection fee</a> ·
-  <a href="https://www.ebay.com.au/sellercentre/delivery-network" target="_blank" rel="noopener">eBay postage rates</a></p>
-</section>
-</main>
-
-<aside class="side">
-<section class="card" id="e">
-  <h2><span class="l">E</span>Your eBay price</h2>
-  <div class="row" style="margin:12px 0 0"><label>Minimum profit per sale</label><div class="field pre"><span class="u">$</span><input id="minProfit" type="number" step="0.5" min="0" value="8"></div></div>
-  <div class="answer" id="answer"></div>
-  <div class="inline" style="justify-content:center;margin-bottom:12px"><button class="primary" id="useRec">Use this price</button><button id="copy">Copy summary</button></div>
-  <div class="row"><label>Price you'll list at<small id="buyerSees"></small></label><div class="field pre"><span class="u">$</span><input id="price" type="number" step="0.01" min="0" value="29.99"></div></div>
-  <div class="hero">
-    <div class="tile"><div class="k">Net profit</div><div class="v" id="oProfit">–</div></div>
-    <div class="tile"><div class="k">Margin</div><div class="v" id="oMargin">–</div></div>
-    <div class="tile"><div class="k">ROI</div><div class="v" id="oRoi">–</div></div>
-  </div>
-  <table class="bd" id="breakdown"></table>
-  <h3>Key numbers</h3>
-  <div class="kv"><span>Lowest price for $<span id="mpL">8</span> profit</span><b id="oMin">–</b></div>
-  <div class="kv"><span>Break-even price</span><b id="oBreak">–</b></div>
-  <div class="kv"><span>Max sourcing cost for $<span id="mpL2">8</span> at market median</span><b id="oMaxCost">–</b></div>
-  <div class="kv" style="border:none"><span>eBay takes (fees ÷ sale)</span><b id="oFeeRate">–</b></div>
-  <div class="inline" style="margin-top:12px"><button id="reset">Reset</button></div>
-</section>
-</aside>
-</div>
-</div>
-
-<script>
-const $=id=>document.getElementById(id);
-const n=v=>{const x=parseFloat(v);return isFinite(x)?x:0};
-const money=v=>(v<0?"−":"")+"$"+Math.abs(v).toFixed(2);
-const pct=v=>isFinite(v)?(v*100).toFixed(1)+"%":"–";
-const cls=v=>v>=0?"pos":"neg";
-const escH=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-
-/* Official eBay.com.au rates (incl. GST), checked 26 Nov 2026 */
-const PLANS={
- free:{name:"Free selling",fvf:{t1:0,t2:0,t3:0,t4:0},fixed:0,over:0,intl:.03,bpf:true,hint:"$0 final value fee. Buyer pays a Buyer Protection fee."},
- starter:{name:"Pro Starter",fvf:{t1:13.4,t2:13.4,t3:13.4,t4:13.4},fixed:.30,over:2.5,intl:.011,hint:"13.4% + $0.30 per order."},
- basic:{name:"Pro Basic",fvf:{t1:8.03,t2:11.44,t3:12.43,t4:13.09},fixed:.33,over:2.75,intl:.011,hint:"$27.45/month."},
- featured:{name:"Pro Featured",fvf:{t1:7.26,t2:10.34,t3:11.22,t4:11.77},fixed:.33,over:2.75,intl:.011,hint:"$82.45/month."},
- anchor:{name:"Pro Anchor",fvf:{t1:6.82,t2:9.68,t3:10.56,t4:11.11},fixed:.33,over:2.75,intl:.011,hint:"$604.95/month."}};
-let dest="au",gst="no";
-const bpf=p=>p>0?Math.min(p,20)*.08+Math.max(0,Math.min(p,500)-20)*.06+Math.max(0,p-500)*.04+.30:0;
-
-function read(){return{price:n($("price").value),cost:n($("cost").value),pack:n($("pack").value),postage:n($("postage").value),
- postCharged:n($("postCharged").value),fee:n($("feePct").value)/100,fixed:n($("fixed").value),ad:n($("adPct").value)/100,
- minP:n($("minProfit").value),plan:PLANS[$("plan").value],intl:dest==="intl",gst:gst==="yes"}}
-function calc(d,price,cost){
- cost=cost??d.cost;const total=price+d.postCharged;
- const fvf=Math.min(total,4000)*d.fee+Math.max(0,total-4000)*(d.plan.over/100);
- const intlFee=d.intl?total*d.plan.intl:0,ad=total*d.ad,fees=fvf+d.fixed+intlFee+ad;
- const gstNet=d.gst?Math.max(0,(total-fees)/11):0,costs=cost+d.pack+d.postage;
- const profit=total-fees-costs-gstNet,buyer=total+(d.plan.bpf?bpf(price):0);
- return{total,fvf,intlFee,ad,fees,gstNet,costs,profit,buyer,margin:total>0?profit/total:NaN,roi:costs>0?profit/costs:NaN}}
-function solve(fn,goal,hi=100000){let lo=0;for(let i=0;i<80;i++){const m=(lo+hi)/2;if(fn(m)<goal)lo=m;else hi=m}return hi}
-const priceForProfit=(d,g)=>{const p=solve(x=>calc(d,x).profit,g);return p>99999?Infinity:p};
-const priceForBuyer=(d,b)=>solve(x=>calc(d,x).buyer,b);
-function charmUp(p){const b=Math.floor(p);for(const x of[b-0.01,b+0.49,b+0.99])if(x>=p-1e-9)return+x.toFixed(2);return b+1.49}
-function charmDown(p){const b=Math.floor(p);for(const x of[b+0.99,b+0.49,b-0.01])if(x<=p+1e-9)return+x.toFixed(2);return p}
-function parseComps(){return($("comps").value.match(/\d+(?:\.\d+)?/g)||[]).map(Number).filter(x=>x>0).sort((a,b)=>a-b)}
-const median=a=>{const m=Math.floor(a.length/2);return a.length%2?a[m]:(a[m-1]+a[m])/2};
-
-function applyPlan(){const p=PLANS[$("plan").value];$("feePct").value=p.fvf[$("tier").value];$("fixed").value=p.fixed.toFixed(2);render()}
-$("plan").addEventListener("change",applyPlan);$("tier").addEventListener("change",applyPlan);
-function toggle(id,set){$(id).querySelectorAll("button").forEach(b=>b.onclick=()=>{$(id).querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));set(b.dataset.v);render()})}
-toggle("dest",v=>dest=v);toggle("gst",v=>gst=v);
-$("postPreset").addEventListener("change",()=>{const v=$("postPreset").value;if(v!=="custom")$("postage").value=v;render()});
-$("postage").addEventListener("input",()=>{const v=n($("postage").value).toFixed(2);$("postPreset").value=[...$("postPreset").options].some(o=>o.value===v)?v:"custom"});
-
-let recPrice=null;
-function render(){
- const d=read(),r=calc(d,d.price),c=parseComps();
- $("planHint").textContent=d.plan.hint;$("mpL").textContent=$("mpL2").textContent=d.minP.toFixed(0);
- const need=priceForProfit(d,d.minP),needL=isFinite(need)?charmUp(need):Infinity,needBuyer=isFinite(needL)?calc(d,needL).buyer:Infinity;
- let k,p,s,tone;
- if(!isFinite(need)){recPrice=null;tone="bad";k="Can't reach target";p="—";s="Fees are too high to make this profit. Check the fee % in step C."}
- else if(!c.length){recPrice=needL;tone="good";k="List it at";p=money(needL);s=`Earns ${money(calc(d,needL).profit)} profit. Add competitor prices in step B to check the market.`}
- else{const lo=c[0],med=median(c),hi=c[c.length-1];
-  const under=charmDown(priceForBuyer(d,lo-0.01));
-  const medL=charmDown(priceForBuyer(d,med));
-  if(needBuyer<lo&&calc(d,under).profit>=d.minP){recPrice=under;tone="good";k="List it at";p=money(under);s=`Cheaper than every competitor (lowest ${money(lo)}) and you still keep ${money(calc(d,under).profit)}. Expect fast sales.`}
-  else if(needBuyer<=med){const pick=calc(d,medL).profit>=d.minP&&medL>=needL?medL:needL;recPrice=pick;tone="good";k="List it at";p=money(pick);s=`At or below the market median (${money(med)}) with ${money(calc(d,pick).profit)} profit — competitive and on target.`}
-  else if(needBuyer<=hi){recPrice=needL;tone="warn";k="List it at (slower sales)";p=money(needL);s=`Above the median (${money(med)}) but under the highest (${money(hi)}). You keep ${money(calc(d,needL).profit)}; sales may be slower — or source it cheaper.`}
-  else{recPrice=null;tone="bad";k="Not worth listing";p="Skip";const mc=d.cost+calc(d,medL).profit-d.minP;
-   s=`You'd need ${money(needL)}, but competitors top out at ${money(hi)}. At the median you'd make only ${money(calc(d,medL).profit)}. Source it for under ${money(Math.max(mc,0))} to earn $${d.minP.toFixed(0)}.`}}
- $("answer").className="answer "+tone;
- $("answer").innerHTML=`<div class="k">${escH(k)}</div><div class="p">${escH(p)}</div><div class="s">${escH(s)}</div>`;
- $("useRec").disabled=recPrice===null;
-
- $("oProfit").textContent=money(r.profit);$("oProfit").className="v "+(r.profit>=d.minP-0.005?"pos":"neg");
- $("oMargin").textContent=pct(r.margin);$("oRoi").textContent=pct(r.roi);
- $("buyerSees").textContent=d.plan.bpf?`Buyer sees ${money(r.buyer)} incl. Buyer Protection fee`:(d.postCharged?`Buyer pays ${money(r.total)} incl. postage`:"Free postage · GST included");
- const rows=[["Sale total",r.total,""],[`eBay final value fee (${(d.fee*100).toFixed(2)}%)`,-r.fvf,"m"],["eBay fixed order fee",-d.fixed,"m"]];
- if(r.intlFee)rows.push([`International fee (${(d.plan.intl*100).toFixed(1)}%)`,-r.intlFee,"m"]);
- if(r.ad)rows.push(["Promoted Listings",-r.ad,"m"]);
- rows.push(["Sourcing cost (all in)",-d.cost,"m"],["Postage to buyer",-d.postage,"m"]);
- if(d.pack)rows.push(["Packaging",-d.pack,"m"]);if(r.gstNet)rows.push(["GST to ATO (net)",-r.gstNet,"m"]);
- const tb=$("breakdown");tb.innerHTML="";rows.forEach(([a,v,c2])=>{const tr=tb.insertRow();tr.className=c2;tr.insertCell().textContent=a;tr.insertCell().textContent=money(v)});
- const tr=tb.insertRow();tr.className="t";tr.insertCell().textContent="Net profit";const cc=tr.insertCell();cc.textContent=money(r.profit);cc.className=cls(r.profit);
- $("oMin").textContent=isFinite(needL)?money(needL):"n/a";
- const be=priceForProfit(d,0);$("oBreak").textContent=isFinite(be)?money(charmUp(be)):"n/a";
- if(c.length){const medL=charmDown(priceForBuyer(d,median(c)));const mc=d.cost+calc(d,medL).profit-d.minP;$("oMaxCost").textContent=mc>0?money(mc):"$0 — unprofitable"}else $("oMaxCost").textContent="add competitors";
- $("oFeeRate").textContent=r.total?pct(r.fees/r.total):"–";
-
- let fn="";
- if($("plan").value==="free")fn='<p class="note good">Free selling: <b>$0</b> final value fee on domestic sales while your sales stay under $25,000 in 12 months. The buyer pays a Buyer Protection fee on top, so buyers see a slightly higher price.</p>';
- else if($("plan").value==="starter")fn='<p class="note info">Pro Starter: <b>13.4%</b> of the total sale + <b>$0.30</b> per order. Under $25,000 sales in 12 months and not on a Pro plan? You may qualify for free selling — check Seller Hub.</p>';
- else fn=`<p class="note info">${escH(d.plan.name)}: ${(d.fee*100).toFixed(2)}% + $0.33 per order in this category.</p>`;
- if(d.intl)fn+=`<p class="note warn">Overseas buyer: +${(d.plan.intl*100).toFixed(1)}% international fee on the total sale.</p>`;
- $("feeNote").innerHTML=fn;
-
- const cs=$("compStats");
- if(!c.length)cs.innerHTML='<p class="note info">Add competitor prices to get a market-based price.</p>';
- else{const lo=c[0],med=median(c),hi=c[c.length-1];cs.innerHTML=`<div class="cols"><div><div class="kv"><span>Lowest</span><b>${money(lo)}</b></div><div class="kv"><span>Median</span><b>${money(med)}</b></div></div><div><div class="kv"><span>Highest</span><b>${money(hi)}</b></div><div class="kv"><span>Listings entered</span><b>${c.length}</b></div></div></div>`}
- save();
-}
-
-const enc=encodeURIComponent;
-function linkList(el,items){el.innerHTML="";items.forEach(([t,u])=>{const a=document.createElement("a");a.href=u;a.target="_blank";a.rel="noopener";a.textContent=t;el.appendChild(a)})}
-function renderLinks(){const s=$("pname").value.trim()||"product",q=enc(s),c=enc($("compQ").value.trim()||s);
- linkList($("compLinks"),[["Sold listings (AU)","https://www.ebay.com.au/sch/i.html?_nkw="+c+"&LH_Sold=1&LH_Complete=1&LH_PrefLoc=1"],["Lowest price + postage","https://www.ebay.com.au/sch/i.html?_nkw="+c+"&_sop=15&LH_PrefLoc=1"],["Best match","https://www.ebay.com.au/sch/i.html?_nkw="+c],["Terapeak","https://www.ebay.com.au/sh/research?keywords="+c+"&marketplace=EBAY-AU&tabName=SOLD"]]);
- linkList($("srcLinks"),[["AliExpress","https://www.aliexpress.com/wholesale?SearchText="+q],["Temu AU","https://www.temu.com/au/search_result.html?search_key="+q],["Alibaba","https://www.alibaba.com/trade/search?SearchText="+q],["CJ Dropshipping","https://cjdropshipping.com/search/"+q+".html"],["Amazon AU","https://www.amazon.com.au/s?k="+q]])}
-["compQ","pname"].forEach(i=>$(i).addEventListener("input",()=>{renderLinks();save()}));
-
-let imgBlob=null;const drop=$("drop");
-function setImg(f){if(!f||!f.type.startsWith("image/"))return;imgBlob=f;$("thumb").src=URL.createObjectURL(f);$("thumb").style.display="block"}
-$("file").onchange=e=>setImg(e.target.files[0]);
-drop.addEventListener("dragover",e=>{e.preventDefault();drop.classList.add("over")});drop.addEventListener("dragleave",()=>drop.classList.remove("over"));
-drop.addEventListener("drop",e=>{e.preventDefault();drop.classList.remove("over");setImg(e.dataTransfer.files[0])});
-
-/* AI: built into claude.ai, or your own API key elsewhere */
-let sample=null;
-const LS={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(e){}}};
-function aiModeText(){$("aiMode").textContent=sample?"AI: built into Claude ✓":(LS.get("epp_key")?"AI: your API key ✓":"AI: add your API key in AI settings ↓")}
-aiModeText();
-(async()=>{try{if(window.claude&&window.claude.use)sample=await window.claude.use("sample")}catch(e){sample=null}aiModeText()})();
-$("saveKey").onclick=()=>{const k=$("apiKey").value.trim();if(k){LS.set("epp_key",k);$("apiKey").value="";status("API key saved in this browser only.","good")}aiModeText()};
-$("clearKey").onclick=()=>{LS.set("epp_key",null);aiModeText();status("API key removed from this browser.","info")};
-$("model").value=LS.get("epp_model")||"claude-sonnet-5-5";$("model").onchange=()=>LS.set("epp_model",$("model").value.trim());
-function status(t,c="info",spin){$("aiStatus").innerHTML=`<p class="note ${c}">${spin?'<span class="spin"></span> ':""}${escH(t)}</p>`}
-
-function buildPrompt(withSearch){const d=read();return `You are an expert eBay Australia (ebay.com.au) seller and SEO specialist. Identify the product and return ONLY JSON, no other text.
-Inputs:
-- Sourcing link (use words in the URL as clues): ${$("url").value.trim()||"none"}
-- Product name / notes: ${$("pname").value.trim()||"none"}
-- Product image attached: ${imgBlob?"yes":"no"}
-- Total sourcing cost AUD: ${d.cost}
-${withSearch?"- Use web search to find current eBay.com.au listings (prefer SOLD/completed) for this exact product and collect 5-10 total prices in AUD including postage, with each listing URL.\n":""}
-Return JSON with these keys:
-{"product":"short name","category_path":"best eBay AU category path","fee_tier":"t1|t2|t3|t4" (t1=tech devices/home appliances, t3=vehicle parts & accessories, t4=fashion/sporting/collectables/tech accessories/business & industrial, t2=everything else),
-"ebay_query":"3-6 word term Australian buyers type on eBay",
-"title":"eBay title, max 80 characters, main keyword first, key attributes (size/colour/material/compatibility/qty), Australian spelling, no ALL CAPS or symbols",
-"title_alt":"second variation, max 80 characters",
-"primary_keywords":["5-7 highest-intent search terms"],"long_tail_keywords":["8-12 long-tail phrases"],
-"item_specifics":[{"name":"Brand","value":"Unbranded"}, 6-10 relevant eBay item specifics],
-"description":"plain-text eBay description, 150-250 words: one-line hook, 5 benefit lines starting with '• ', specs, 'What's in the box', and a line about fast dispatch within Australia and easy returns. Natural keywords, no HTML, no links, no contact details.",
-"parcel":"250g|500g|1kg|3kg|5kg|10kg likely postage size",
-"competitor_prices":${withSearch?'[{"price":0.00,"url":"https://www.ebay.com.au/itm/..."}] only real prices you found, or [] if none':"[]"},
-"tips":["3 short tips to win organic sales for this product on eBay AU"]}`}
-
-async function blobB64(b){const u=new Uint8Array(await b.arrayBuffer());let s="";for(let i=0;i<u.length;i+=32768)s+=String.fromCharCode.apply(null,u.subarray(i,i+32768));return btoa(s)}
-function extractJSON(t){const a=t.indexOf("{"),b=t.lastIndexOf("}");if(a<0||b<a)throw new Error("AI reply had no data");return JSON.parse(t.slice(a,b+1))}
-async function callAPI(prompt,useSearch){
- const content=[];
- if(imgBlob)content.push({type:"image",source:{type:"base64",media_type:imgBlob.type||"image/jpeg",data:await blobB64(imgBlob)}});
- content.push({type:"text",text:prompt});
- const body={model:$("model").value.trim()||"claude-sonnet-5-5",max_tokens:3000,messages:[{role:"user",content}]};
- if(useSearch)body.tools=[{type:"web_search_20250305",name:"web_search",max_uses:4,user_location:{type:"approximate",country:"AU"}}];
- const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"content-type":"application/json","x-api-key":LS.get("epp_key"),"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify(body)});
- const j=await res.json().catch(()=>({}));
- if(!res.ok){const e=new Error((j.error&&j.error.message)||("HTTP "+res.status));e.status=res.status;throw e}
- return extractJSON((j.content||[]).filter(x=>x.type==="text").map(x=>x.text).join("\n"))}
-
-$("analyze").onclick=async()=>{
- if(!imgBlob&&!$("url").value.trim()&&!$("pname").value.trim()){status("Add a sourcing link, product name or image first.","warn");return}
- if(!sample&&!LS.get("epp_key")){$("aiSettings").open=true;status("On this website AI needs your Anthropic API key — paste it in AI settings below. Or click 'Copy AI prompt' and paste it into Claude.","warn");return}
- $("analyze").disabled=true;
- try{let out;
-  if(sample){status("Analysing product and writing your listing…","info",1);const opts={modelTier:"default"};
-   if(imgBlob){try{const l=await sample.limits();if(l&&l.images)opts.images=[imgBlob]}catch(e){}}
-   out=await sample.json(buildPrompt(false),opts)}
-  else{const ws=$("webSearch").checked;status(ws?"Analysing product and searching eBay AU for competitor prices… (up to a minute)":"Analysing product and writing your listing…","info",1);
-   try{out=await callAPI(buildPrompt(ws),ws)}catch(e){if(ws&&e.status===400)out=await callAPI(buildPrompt(false),false);else throw e}}
-  showSEO(out);
- }catch(e){
-  if(e&&e.code==="not_granted")status("AI permission wasn't granted. Click Analyse again to allow it.","warn");
-  else if(e&&(e.code==="rate_limited"||e.status===429))status("Too many requests — wait a minute and try again.","warn");
-  else if(e&&e.status===401)status("Your API key was rejected. Check it in AI settings.","bad");
-  else status("Couldn't analyse: "+((e&&e.message)||"unknown error")+". Try again or add a product name.","bad");
- }finally{$("analyze").disabled=false}};
-
-$("copyPrompt").onclick=async e=>{try{await navigator.clipboard.writeText(buildPrompt(false));e.target.textContent="Copied ✓ — paste into Claude"}catch(err){e.target.textContent="Copy blocked"}setTimeout(()=>e.target.textContent="Copy AI prompt",2500)};
-
-function copyBtn(get){const b=document.createElement("button");b.textContent="Copy";b.onclick=async()=>{try{await navigator.clipboard.writeText(get());b.textContent="Copied ✓"}catch(e){b.textContent="Select & copy"}setTimeout(()=>b.textContent="Copy",1500)};return b}
-function box(title,count){const w=document.createElement("div");w.className="seo-out";const h=document.createElement("div");h.className="hd";const b=document.createElement("b");b.textContent=title;h.appendChild(b);const r=document.createElement("div");r.className="inline";if(count){const c=document.createElement("span");c.className="cnt";c.textContent=count;r.appendChild(c)}h.appendChild(r);w.appendChild(h);return[w,r]}
-function showSEO(o){
- if(!o||typeof o!=="object")throw new Error("bad AI reply");
- const str=v=>typeof v==="string"?v:"",arr=v=>Array.isArray(v)?v:[];
- if(str(o.ebay_query))$("compQ").value=o.ebay_query;
- if(!$("pname").value&&str(o.product))$("pname").value=o.product;
- if(["t1","t2","t3","t4"].includes(o.fee_tier)){$("tier").value=o.fee_tier;applyPlan()}
- const ps={"250g":"6.60","500g":"7.15","1kg":"9.90","3kg":"11.00","5kg":"13.20","10kg":"16.50"}[str(o.parcel)];if(ps){$("postPreset").value=ps;$("postage").value=ps}
- const cp=arr(o.competitor_prices).filter(x=>x&&isFinite(+x.price)&&+x.price>0);
- const srcEl=$("compSrc");srcEl.innerHTML="";
- if(cp.length){$("comps").value=cp.map(x=>(+x.price).toFixed(2)).join(", ");
-  const p=document.createElement("p");p.className="note warn";p.style.marginTop="8px";p.textContent=`AI found ${cp.length} eBay AU prices — open each to confirm before relying on them:`;srcEl.appendChild(p);
-  const l=document.createElement("div");l.className="links";cp.forEach((x,i)=>{if(typeof x.url==="string"&&x.url.startsWith("https://")){const a=document.createElement("a");a.href=x.url;a.target="_blank";a.rel="noopener";a.textContent=`#${i+1} ${money(+x.price)}`;l.appendChild(a)}});srcEl.appendChild(l)}
- renderLinks();
- const g=$("seo");g.innerHTML="";
- if(str(o.product)){const p=document.createElement("p");p.className="note info";p.textContent=`${o.product}${str(o.category_path)?" — category: "+o.category_path:""}${ps?" — parcel: "+o.parcel:""}`;g.appendChild(p)}
- [["SEO title",str(o.title)],["Alternative title",str(o.title_alt)]].forEach(([t,v])=>{if(!v)return;const[w,r]=box(t,v.length+"/80"+(v.length>80?" ⚠ too long":""));r.appendChild(copyBtn(()=>v));const d=document.createElement("div");d.style.fontWeight="600";d.textContent=v;w.appendChild(d);g.appendChild(w)});
- const kw=[...arr(o.primary_keywords).map(k=>[k,1]),...arr(o.long_tail_keywords).map(k=>[k,0])].filter(k=>typeof k[0]==="string");
- if(kw.length){const[w,r]=box("SEO keywords","highlighted = primary");r.appendChild(copyBtn(()=>kw.map(k=>k[0]).join(", ")));const c=document.createElement("div");c.className="chips";kw.forEach(([k,p])=>{const s=document.createElement("span");s.className="chip"+(p?" p":"");s.textContent=k;c.appendChild(s)});w.appendChild(c);g.appendChild(w)}
- const sp=arr(o.item_specifics).filter(x=>x&&x.name);
- if(sp.length){const[w,r]=box("Item specifics");r.appendChild(copyBtn(()=>sp.map(x=>x.name+": "+x.value).join("\n")));const t=document.createElement("table");sp.forEach(x=>{const tr=t.insertRow();tr.insertCell().textContent=x.name;tr.insertCell().textContent=x.value});w.appendChild(t);g.appendChild(w)}
- if(str(o.description)){const[w,r]=box("Description",o.description.split(/\s+/).length+" words");r.appendChild(copyBtn(()=>o.description));const d=document.createElement("div");d.style.whiteSpace="pre-wrap";d.style.fontSize="14px";d.textContent=o.description;w.appendChild(d);g.appendChild(w)}
- const tips=arr(o.tips);if(tips.length){const[w]=box("Tips for organic sales");const ul=document.createElement("ul");ul.style.margin="0";ul.style.paddingLeft="18px";tips.forEach(t=>{const li=document.createElement("li");li.textContent=t;ul.appendChild(li)});w.appendChild(ul);g.appendChild(w)}
- const f=document.createElement("p");f.className="src";f.textContent="AI-written — check size, material and compatibility against your supplier before listing.";g.appendChild(f);
- status("Done — your price is updated (step E) and your SEO listing is ready (step F).","good");
- render();$("f").scrollIntoView({behavior:"smooth"});
-}
-
-$("useRec").onclick=()=>{if(recPrice!==null){$("price").value=recPrice.toFixed(2);render()}};
-$("copy").onclick=async e=>{const d=read(),r=calc(d,d.price);
- const t=`eBay Profit Pilot (eBay AU, ${d.plan.name})\n${$("pname").value||"Product"}\nList at ${money(d.price)} | eBay fees ${money(r.fees)} | Sourcing ${money(d.cost)} | Postage ${money(d.postage)}\nNet profit ${money(r.profit)} | Margin ${pct(r.margin)} | ROI ${pct(r.roi)}`;
- try{await navigator.clipboard.writeText(t);e.target.textContent="Copied ✓"}catch(err){e.target.textContent="Copy blocked"}setTimeout(()=>e.target.textContent="Copy summary",1500)};
-const ids=["price","cost","pack","postage","postCharged","feePct","fixed","adPct","minProfit","comps","plan","tier","postPreset","compQ","pname","url"];
-const defaults={};
-function save(){try{const s={};ids.forEach(i=>s[i]=$(i).value);s.dest=dest;s.gst=gst;localStorage.setItem("epp3",JSON.stringify(s))}catch(e){}}
-function load(){try{const s=JSON.parse(localStorage.getItem("epp3")||"null");if(!s)return;ids.forEach(i=>{if(s[i]!==undefined)$(i).value=s[i]});
- if(s.dest){dest=s.dest;$("dest").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v===dest))}
- if(s.gst){gst=s.gst;$("gst").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v===gst))}}catch(e){}}
-ids.forEach(i=>$(i).addEventListener("input",render));
-$("reset").onclick=()=>{try{localStorage.removeItem("epp3")}catch(e){}ids.forEach(i=>$(i).value=defaults[i]);$("seo").innerHTML='<p class="note info">Your SEO title, keywords, item specifics and description will appear here.</p>';$("compSrc").innerHTML="";applyPlan();renderLinks()};
-$("feePct").value=PLANS.starter.fvf.t2;$("fixed").value="0.30";
-ids.forEach(i=>defaults[i]=$(i).value);
-load();renderLinks();render();
-</script>
-</body>
-</html>
+<p class="muted">Want the old manual calculator? <a href="calculator.html">Open it here</a>. Fees were checked against eBay.com.au on 26 Nov 2026; sources are listed inside the extension.</p>
+</main></body></html>

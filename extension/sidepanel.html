@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>eBay Profit Pilot</title>
+<link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+<header>
+  <div class="brand">eBay <span>Profit Pilot</span></div>
+  <div class="sub">🇦🇺 eBay.com.au · AUD · official fees incl. GST</div>
+</header>
+
+<!-- STEP 1 -->
+<section class="card" id="s1">
+  <h2><span class="n">1</span>Supplier product <span class="st" id="st1"></span></h2>
+  <p class="hint">Open the product on AliExpress (or Temu, Alibaba…) and press <b>Run</b> — or paste the link here.</p>
+  <input type="url" id="url" placeholder="Supplier product link">
+  <div class="row2">
+    <button class="primary big" id="runAll">▶ Run all steps</button>
+    <button id="read1">Read page only</button>
+  </div>
+  <div id="sup" class="hidden">
+    <div class="prod"><img id="supImg" alt=""><div><div id="supTitle" class="ptitle"></div><a id="supLink" target="_blank" rel="noopener">Open supplier page</a></div></div>
+    <div class="grid3">
+      <label>Item price<input id="supPrice" type="number" step="0.01" min="0"></label>
+      <label>Shipping<input id="supShip" type="number" step="0.01" min="0"></label>
+      <label>Was / original<input id="supOrig" type="number" step="0.01" min="0"></label>
+    </div>
+    <label class="chk"><input type="checkbox" id="addGst" checked> Add 10% GST (AliExpress/Temu add it at checkout)</label>
+    <div class="kv"><span>Discount</span><b id="supDisc">–</b></div>
+    <div class="kv"><span>Shipping</span><b id="supShipTxt">–</b></div>
+    <div class="kv total"><span>Your total sourcing cost</span><b id="supTotal">–</b></div>
+    <p class="tiny">Check these against the supplier page before you buy — edit any number that's wrong.</p>
+  </div>
+  <div id="msg1"></div>
+</section>
+
+<!-- STEP 2 -->
+<section class="card" id="s2">
+  <h2><span class="n">2</span>Same product on eBay Australia <span class="st" id="st2"></span></h2>
+  <input type="text" id="kw" placeholder="eBay search keywords (filled from the supplier title)">
+  <div class="row2"><button id="find2">Find on eBay AU</button>
+    <a class="lnk" id="ebayOpen" target="_blank" rel="noopener">Open on eBay ↗</a></div>
+  <div id="msg2"></div>
+  <div id="compStats"></div>
+  <div id="compList"></div>
+</section>
+
+<!-- STEP 3 -->
+<section class="card" id="s3">
+  <h2><span class="n">3</span>Your eBay price <span class="st" id="st3"></span></h2>
+  <div class="grid2">
+    <label>Minimum profit<input id="minProfit" type="number" step="0.5" min="0" value="8"></label>
+    <label>Parcel size (postage)
+      <select id="parcel">
+        <option value="6.60">Up to 250g — $6.60</option><option value="7.15">Up to 500g — $7.15</option><option value="9.90">Up to 1kg — $9.90</option>
+        <option value="11.00">Up to 3kg — $11.00</option><option value="13.20">Up to 5kg — $13.20</option><option value="16.50">Up to 10kg — $16.50</option>
+      </select></label>
+    <label>Seller plan
+      <select id="plan"><option value="free">Free selling (≤$25k/yr)</option><option value="starter" selected>Pro Starter</option><option value="basic">Pro Basic</option><option value="featured">Pro Featured</option><option value="anchor">Pro Anchor</option></select></label>
+    <label>Category
+      <select id="tier"><option value="t2" selected>Most (incl. Home & Kitchen)</option><option value="t3">Vehicle Parts & Accessories</option><option value="t1">Tech devices / Appliances</option><option value="t4">Fashion, Sporting, Tech accessories</option></select></label>
+  </div>
+  <div class="answer" id="answer"></div>
+  <table class="bd" id="breakdown"></table>
+  <div class="kv"><span>Lowest price for your minimum profit</span><b id="oMin">–</b></div>
+  <div class="kv"><span>Max you can pay the supplier (at market median)</span><b id="oMaxCost">–</b></div>
+  <button id="copySum" class="full">Copy summary</button>
+</section>
+
+<!-- STEP 4 -->
+<section class="card" id="s4">
+  <h2><span class="n">4</span>SEO listing (AI) <span class="st" id="st4"></span></h2>
+  <p class="hint">Writes an 80-character title, keywords, item specifics and description from the supplier page and photo. Needs your Anthropic API key (saved only in this browser).</p>
+  <div class="row2"><input type="password" id="apiKey" placeholder="sk-ant-… (Anthropic API key)"><button id="saveKey">Save</button></div>
+  <div class="row2"><button class="primary" id="seoBtn">✨ Write SEO listing</button><span id="keyState" class="tiny"></span></div>
+  <div id="msg4"></div>
+  <div id="seo"></div>
+</section>
+
+<!-- STEP 5 -->
+<section class="card" id="s5">
+  <h2><span class="n">i</span>eBay fees & postage — official <span class="ok">CHECKED 26 NOV 2026</span></h2>
+  <details open><summary>eBay fees by sale price (Pro Starter)</summary><table class="ref" id="feeByPrice"></table>
+    <p class="tiny">13.4% of the total sale (item + postage + tax) up to $4,000, 2.5% of any amount above $4,000, plus $0.30 per order.</p></details>
+  <details><summary>All seller plans & extra fees</summary>
+    <table class="ref">
+      <tr><th>Plan</th><th>Most</th><th>Vehicle parts</th><th>Tech devices</th><th>Fashion etc.</th><th>Per order</th></tr>
+      <tr><td>Pro Starter ($0/mo)</td><td>13.4%</td><td>13.4%</td><td>13.4%</td><td>13.4%</td><td>$0.30</td></tr>
+      <tr><td>Pro Basic ($27.45/mo)</td><td>11.44%</td><td>12.43%</td><td>8.03%</td><td>13.09%</td><td>$0.33</td></tr>
+      <tr><td>Pro Featured ($82.45/mo)</td><td>10.34%</td><td>11.22%</td><td>7.26%</td><td>11.77%</td><td>$0.33</td></tr>
+      <tr><td>Pro Anchor ($604.95/mo)</td><td>9.68%</td><td>10.56%</td><td>6.82%</td><td>11.11%</td><td>$0.33</td></tr>
+    </table>
+    <table class="ref">
+      <tr><td>Free selling (≤ $25,000 sales in 12 months, no Pro plan)</td><td>$0 final value fee</td></tr>
+      <tr><td>Buyer Protection fee (buyer pays, free selling)</td><td>8% of first $20 + 6% to $500 + 4% above + $0.30</td></tr>
+      <tr><td>International sale fee</td><td>1.1% Pro · 3% free selling</td></tr>
+      <tr><td>Below Standard / high "not as described" returns</td><td>+5.5% (6.6% after 4 months)</td></tr>
+      <tr><td>Dispute you're found responsible for (free selling)</td><td>$24.20</td></tr>
+      <tr><td>GST</td><td>10%, included in all fees</td></tr>
+    </table></details>
+  <details><summary>Postage within Australia (eBay labels)</summary>
+    <table class="ref">
+      <tr><th>Weight</th><th>Local</th><th>Interstate</th><th>Regional</th></tr>
+      <tr><td>Up to 250g</td><td>$4.95</td><td>$6.05</td><td>$6.60</td></tr>
+      <tr><td>Up to 500g</td><td>$6.05</td><td>$7.15</td><td>$6.60</td></tr>
+      <tr><td>Up to 1kg</td><td>$7.70</td><td>$8.80</td><td>$9.90</td></tr>
+      <tr><td>Up to 3kg</td><td>$8.25</td><td>$10.45</td><td>$11.00</td></tr>
+      <tr><td>Up to 5kg</td><td>$9.35</td><td>$13.20</td><td>$12.10</td></tr>
+      <tr><td>Up to 10kg</td><td>$9.90</td><td>$16.50</td><td>$14.85</td></tr>
+      <tr><td>Up to 15kg</td><td>$10.45</td><td>$22.00</td><td>$16.50</td></tr>
+      <tr><td>Up to 20kg</td><td>$11.55</td><td>$22.00</td><td>$18.70</td></tr>
+      <tr><td>Up to 25kg</td><td>$12.10</td><td>$23.10</td><td>$20.35</td></tr>
+    </table>
+    <p class="tiny">"From" prices; exact price shown when you buy the label. Fuel surcharge extra; Perth and some routes cost more. Step 3 uses the highest zone so free postage covers every buyer.</p></details>
+  <details><summary>Postage overseas (Australia Post International Standard)</summary>
+    <table class="ref">
+      <tr><th>Zone</th><th>250g</th><th>500g</th><th>1kg</th><th>1.5kg</th><th>2kg</th></tr>
+      <tr><td>1 · New Zealand</td><td>$17.90</td><td>$21.60</td><td>$29.00</td><td>$36.40</td><td>$43.80</td></tr>
+      <tr><td>2 · Asia Pacific</td><td>$20.60</td><td>$26.85</td><td>$39.40</td><td>$51.95</td><td>$64.50</td></tr>
+      <tr><td>3 · USA & Canada</td><td>$23.05</td><td>$29.95</td><td>$43.60</td><td>$57.40</td><td>$71.10</td></tr>
+      <tr><td>4 · UK & Europe</td><td>$28.40</td><td>$35.55</td><td>$49.90</td><td>$64.20</td><td>$78.50</td></tr>
+      <tr><td>5 · Rest of world</td><td>$34.45</td><td>$43.80</td><td>$62.50</td><td>$81.15</td><td>$99.80</td></tr>
+    </table>
+    <p class="tiny">Australia Post retail prices. Buying through eBay Labels gives up to 20% off International Standard & Express. Postal services to the USA have resumed; US buyers may pay import duties. Overseas sales also add eBay's international fee.</p></details>
+  <p class="tiny src">Sources: <a target="_blank" rel="noopener" href="https://www.ebay.com.au/help/selling/selling-fees/ebay-stores-selling-fees?id=4809">eBay Pro fees</a> ·
+  <a target="_blank" rel="noopener" href="https://www.ebay.com.au/help/selling/fees-credits-invoices/standard-selling-fees?id=4822">Free selling</a> ·
+  <a target="_blank" rel="noopener" href="https://www.ebay.com.au/sellercentre/news-offers/more-info-on-recent-selling-updates">Buyer Protection fee</a> ·
+  <a target="_blank" rel="noopener" href="https://www.ebay.com.au/sellercentre/delivery-network">eBay postage</a> ·
+  <a target="_blank" rel="noopener" href="https://www.ebay.com.au/sellercentre/australia-post">eBay × AusPost</a> ·
+  <a target="_blank" rel="noopener" href="https://auspost.com.au/business/shipping/parcels/international-sending/standard">AusPost International</a> ·
+  <a target="_blank" rel="noopener" href="https://auspost.com.au/disruptions-and-updates/international-service-updates/us-tariffs">US service update</a></p>
+</section>
+<script src="parsers.js"></script>
+<script src="sidepanel.js"></script>
+</body>
+</html>
